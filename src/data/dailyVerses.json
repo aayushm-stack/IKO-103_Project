@@ -1,0 +1,37 @@
+[
+  {
+    "id": "verse-1",
+    "sanskrit": "ध्यायतो विषयान्पुंसः सङ्गस्तेषूपजायते। सङ्गात्सञ्जायते कामः कामात्क्रोधोऽभिजायते॥",
+    "transliteration": "dhyāyato viṣayān puṁsaḥ saṅgas teṣūpajāyate | saṅgāt sañjāyate kāmaḥ kāmāt krodho 'bhijāyate ||",
+    "meaning": "While contemplating sense objects, attachment develops; from attachment arises craving, and from hindered craving springs anger.",
+    "source": "Bhagavad Gita 2.62"
+  },
+  {
+    "id": "verse-2",
+    "sanskrit": "युक्ताहारविहारस्य युक्तचेष्टस्य कर्मसु। युक्तस्वप्नावबोधस्य योगो भवति दुःखहा॥",
+    "transliteration": "yuktāhāra-vihārasya yukta-ceṣṭasya karmasu | yukta-svapnāvabodhasya yogo bhavati duḥkha-hā ||",
+    "meaning": "For one who is moderate in eating and recreation, balanced in effort at work, and regulated in sleep and waking, yoga removes all sorrow.",
+    "source": "Bhagavad Gita 6.17"
+  },
+  {
+    "id": "verse-3",
+    "sanskrit": "योगश्चित्तवृत्तिनिरोधः॥",
+    "transliteration": "yogaś citta-vṛtti-nirodhaḥ ||",
+    "meaning": "Yoga is the intentional calming and stilling of the modifications and fluctuations of the mind.",
+    "source": "Patanjali Yoga Sutras 1.2"
+  },
+  {
+    "id": "verse-4",
+    "sanskrit": "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्। ततस्ततो नियम्यैतदात्मन्येव वशं नयेत्॥",
+    "transliteration": "yato yato niścarati manaś cañcalam asthiram | tato tato niyamyaitad ātmany eva vaśaṁ nayet ||",
+    "meaning": "From wherever the restless and unsteady mind wanders away, one should gently rein it in and bring it back under self-regulation.",
+    "source": "Bhagavad Gita 6.26"
+  },
+  {
+    "id": "verse-5",
+    "sanskrit": "वितर्कबाधने प्रतिपक्षभावनम्॥",
+    "transliteration": "vitarka-bādhane pratipakṣa-bhāvanam ||",
+    "meaning": "When afflicted by unwholesome or negative thoughts, cultivate the opposite, constructive perspective.",
+    "source": "Patanjali Yoga Sutras 2.33"
+  }
+]
