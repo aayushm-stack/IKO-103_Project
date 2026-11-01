@@ -1,0 +1,18 @@
+{
+  "short_name": "BrahmaPath",
+  "name": "BrahmaPath",
+  "description": "The mind acts as the reins. You are the charioteer.",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#FDFBF7",
+  "theme_color": "#D97706",
+  "display": "standalone",
+  "orientation": "portrait"
+}
