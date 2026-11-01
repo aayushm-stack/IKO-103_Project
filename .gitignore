@@ -9,18 +9,29 @@ pnpm-debug.log*
 # Build & Native Wrappers (DO NOT COMMIT)
 node_modules/
 build/
+**/build/
+.gradle/
+**/.gradle/
 android/
 scratch/
 ios/
+local.properties
+**/local.properties
+.vite/
 
 # Keep the APK output folder, but ignore any intermediate APKs
 *.apk
 !apk/*.apk
+*.dex
+*.class
+*.keystore
+*.jks
 
 # Dependencies
 # package-lock.json* # Keep tracked so npm packages match exactly on both machines
 
 # Vite / Build Output
+dist/
 dist-ssr/
 *.local
 
