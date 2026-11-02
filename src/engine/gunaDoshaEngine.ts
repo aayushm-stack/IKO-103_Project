@@ -34,6 +34,7 @@ export interface DoshaDiagnosisResult {
  * Computes a normalized Tri-Guna distribution (sattva + rajas + tamas === 100)
  * reflecting recent behavioral patterns across nourishment, sleep, vital focus, urge loops,
  * and emotional friction/buffering from the Bhāva Compass.
+ * Supports optional Sentinel telemetry when present.
  */
 export function calculateGunaDistribution(
   logs: TrayopastambhaLog[] = [],
@@ -82,6 +83,11 @@ export function calculateGunaDistribution(
         tamasWeight += 12;
       }
 
+      // Sentinel telemetry: watchStimulantProfile
+      if (log.ahara.watchStimulantProfile === 'high_watch_caffeine') {
+        rajasWeight += 6;
+      }
+
       // Sensory mindfulness & digital intake (Self-Anchored Relative Model)
       sattvaWeight += (log.ahara.sensoryMindfulnessScore || 0) * 3;
       const baselineMins = log.ahara.baselineMinutesAtLog ?? 360;
@@ -119,6 +125,14 @@ export function calculateGunaDistribution(
       } else if (log.nidra.hoursSlept > 9) {
         tamasWeight += 8;
       }
+
+      // Sentinel telemetry: watchRestProtocol
+      if (log.nidra.watchRestProtocol === 'split_sentry_kurma') {
+        sattvaWeight += 6;
+      }
+      if (log.nidra.watchRestProtocol === 'post_watch_hypervigilance') {
+        rajasWeight += 8;
+      }
     }
 
     // Brahmacharya (Energy conservation & deep work)
@@ -132,6 +146,14 @@ export function calculateGunaDistribution(
         rajasWeight += 10;
       } else {
         tamasWeight += 10;
+      }
+
+      // Sentinel telemetry: sahyogCohesion
+      if (log.brahmacharya.sahyogCohesion === 'sahyog_connected') {
+        sattvaWeight += 6;
+      }
+      if (log.brahmacharya.sahyogCohesion === 'barracks_isolated') {
+        tamasWeight += 8;
       }
     }
   }
@@ -252,6 +274,7 @@ export function calculateGunaDistribution(
  *
  * Normalizes all three doshas to strictly equal 100%, determines the dominant aggravated humor,
  * and prescribes dynamic, compassionate Ayurvedic remedies based on the highest Dosha.
+ * Evaluates optional Sentinel telemetry natively when present.
  */
 export function diagnoseDoshaImbalance(
   logs: TrayopastambhaLog[] = [],
@@ -302,6 +325,12 @@ export function diagnoseDoshaImbalance(
       if (log.ahara.nutritionQuality === 'Rajasic') {
         pittaScore += 10;
       }
+
+      // Sentinel telemetry: watchStimulantProfile
+      if (log.ahara.watchStimulantProfile === 'high_watch_caffeine') {
+        pittaScore += 15;
+        vataScore += 8;
+      }
     }
 
     // 2. Nidra signals
@@ -325,12 +354,23 @@ export function diagnoseDoshaImbalance(
       if (log.nidra.restQuality === 'Lethargic') {
         kaphaScore += 20;
       }
+
+      // Sentinel telemetry: watchRestProtocol
+      if (log.nidra.watchRestProtocol === 'post_watch_hypervigilance') {
+        vataScore += 18;
+      }
     }
 
     // 3. Brahmacharya signals
     if (hasBrahmacharya && log.brahmacharya) {
       if (log.brahmacharya.dominantGuna === 'Rajas') {
         pittaScore += 10;
+      }
+
+      // Sentinel telemetry: sahyogCohesion
+      if (log.brahmacharya.sahyogCohesion === 'barracks_isolated') {
+        kaphaScore += 14;
+        vataScore += 8;
       }
     }
 

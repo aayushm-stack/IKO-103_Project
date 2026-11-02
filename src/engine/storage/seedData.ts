@@ -11,6 +11,7 @@ import { STORAGE_KEYS, setLocalItem } from './localStore';
 export const DEFAULT_PREFERENCES: UserPreferences = {
   name: '',
   sankalpa: 'Conserve cognitive virya and cultivate Sattvic focus',
+  battlegroundPath: 'inner',
   baselineGuna: 'Rajas',
   dominantDosha: 'Vata',
   preferredMicroSwaps: [

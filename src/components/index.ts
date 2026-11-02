@@ -78,4 +78,11 @@ export {
   CompassMobile,
   CascadeVisualizer,
   ReframeInputs,
+  SentinelSadhana,
+  SentinelPauseGate,
+  SentinelCompass,
 } from './Features/FeaturesPage';
+
+// Sentinel Frontline Components
+export { SentinelDashboard } from './Sentinel/SentinelDashboard';
+export { SentinelVault } from './Sentinel/SentinelVault';

@@ -1,6 +1,26 @@
 import { GunaType, DoshaType } from './primitives';
 
 /**
+ * Stage 2 Sentinel Telemetry: Operational stimulant and ration profile under watch duty.
+ */
+export type WatchStimulantProfile = 'balanced_ration' | 'high_watch_caffeine' | 'irregular_missed';
+
+/**
+ * Stage 2 Sentinel Telemetry: Rest protocol adapting to circadian watch shifts and duty cycles.
+ */
+export type WatchRestProtocol = 'continuous_bunk' | 'split_sentry_kurma' | 'post_watch_hypervigilance';
+
+/**
+ * Stage 2 Sentinel Telemetry: Peer/unit cohesion and psychological buffer state.
+ */
+export type SahyogCohesionState = 'sahyog_connected' | 'command_friction' | 'barracks_isolated';
+
+/**
+ * Stage 2 Sentinel Telemetry: Protocols for speech discipline and mental decompression.
+ */
+export type SpeechRestraintProtocol = 'mauna_hold_10m' | 'suhrda_measured_speech' | 'sahyog_buddy_debrief';
+
+/**
  * Ahara (Nourishment & Sensory Intake - Charaka Samhita Sutrasthana 11.35, 28.3):
  * Encompasses nutritional quality as well as mental and digital sensory inputs.
  */
@@ -13,6 +33,8 @@ export interface AharaLog {
   sensoryMindfulnessScore: number;
   /** Snapshot of the user's personal screen time baseline (in minutes) at the moment of logging */
   baselineMinutesAtLog?: number;
+  /** Optional Sentinel Telemetry: Stimulant and ration pattern during watch duty */
+  watchStimulantProfile?: WatchStimulantProfile;
 }
 
 /**
@@ -26,6 +48,10 @@ export interface NidraLog {
   bedtimeConsistency: boolean;
   /** Subjective restorative depth of rest */
   restQuality: 'Restorative' | 'Disturbed' | 'Lethargic';
+  /** Optional Sentinel Telemetry: Watch sleep protocol adapted for sentry duty */
+  watchRestProtocol?: WatchRestProtocol;
+  /** Optional Sentinel Telemetry: Active decompression minutes before sleep */
+  postWatchUnwindMinutes?: number;
 }
 
 /**
@@ -39,6 +65,8 @@ export interface BrahmacharyaLog {
   focusedStudyBlocks: number;
   /** Predominant psychological quality observed during activity */
   dominantGuna: GunaType;
+  /** Optional Sentinel Telemetry: Unit cohesion and psychological buffer level */
+  sahyogCohesion?: SahyogCohesionState;
 }
 
 /**

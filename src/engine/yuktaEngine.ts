@@ -94,10 +94,10 @@ export function evaluateScreenTimeZone(
   };
 }
 
-
 /**
  * Computes individual pillar scores for Ahara, Nidra, and Brahmacharya.
  * Returns exact individual scores: ahara (0–34), nidra (0–33), brahmacharya (0–33).
+ * Natively supports optional Sentinel telemetry while maintaining 100% backward compatibility for Stage 1.
  */
 export function getPillarScores(
   ahara: AharaLog,
@@ -110,12 +110,22 @@ export function getPillarScores(
 } {
   // 1. Ahara Scoring (Max 34 pts)
   let aharaScore = 0;
-  if (ahara.nutritionQuality === 'Sattvic') {
-    aharaScore += 16;
-  } else if (ahara.nutritionQuality === 'Rajasic') {
-    aharaScore += 9;
+  if (ahara.watchStimulantProfile) {
+    if (ahara.watchStimulantProfile === 'balanced_ration') {
+      aharaScore += 12; // Balanced operational ration awards full 12 pts
+    } else if (ahara.watchStimulantProfile === 'high_watch_caffeine') {
+      aharaScore += 8; // Recognizing operational sentry need while noting stimulant load
+    } else {
+      aharaScore += 3; // Irregular or missed ration awards 3 pts
+    }
   } else {
-    aharaScore += 3;
+    if (ahara.nutritionQuality === 'Sattvic') {
+      aharaScore += 16;
+    } else if (ahara.nutritionQuality === 'Rajasic') {
+      aharaScore += 9;
+    } else {
+      aharaScore += 3;
+    }
   }
 
   const baselineMins = ahara.baselineMinutesAtLog ?? 360;
@@ -147,10 +157,22 @@ export function getPillarScores(
     nidraScore += 4; // Lethargic
   }
 
-  if (nidra.bedtimeConsistency) {
-    nidraScore += 6;
+  // Sentinel watchRestProtocol vs. Stage 1 bedtimeConsistency
+  if (nidra.watchRestProtocol === 'split_sentry_kurma') {
+    nidraScore += 8; // Full consistency points for disciplined Kurma sensory withdrawal
+    if (hours >= 5.0 && hours <= 9.5) {
+      nidraScore += 3; // Tactical recovery bonus (capped so nidraScore <= 33)
+    }
+  } else if (nidra.watchRestProtocol === 'post_watch_hypervigilance') {
+    nidraScore += 2; // 2 consistency points instead of 8
+  } else if (nidra.watchRestProtocol === 'continuous_bunk') {
+    nidraScore += nidra.bedtimeConsistency ? 8 : 2;
   } else {
-    nidraScore += 2;
+    if (nidra.bedtimeConsistency) {
+      nidraScore += 6;
+    } else {
+      nidraScore += 2;
+    }
   }
 
   // 3. Brahmacharya Scoring (Max 33 pts) - Energy conservation & deep work
@@ -164,12 +186,23 @@ export function getPillarScores(
   const cappedBlocks = Math.min(5, Math.max(0, brahmacharya.focusedStudyBlocks));
   brahmacharyaScore += Math.round((cappedBlocks / 5) * 12);
 
-  if (brahmacharya.dominantGuna === 'Sattva') {
-    brahmacharyaScore += 7;
-  } else if (brahmacharya.dominantGuna === 'Rajas') {
-    brahmacharyaScore += 4;
+  // Sentinel sahyogCohesion vs. Stage 1 dominantGuna
+  if (brahmacharya.sahyogCohesion) {
+    if (brahmacharya.sahyogCohesion === 'sahyog_connected') {
+      brahmacharyaScore += 8; // Full 8 Guna/Cohesion points
+    } else if (brahmacharya.sahyogCohesion === 'command_friction') {
+      brahmacharyaScore += 4; // 4 points
+    } else {
+      brahmacharyaScore += 1; // barracks_isolated awards 1 point
+    }
   } else {
-    brahmacharyaScore += 1;
+    if (brahmacharya.dominantGuna === 'Sattva') {
+      brahmacharyaScore += 7;
+    } else if (brahmacharya.dominantGuna === 'Rajas') {
+      brahmacharyaScore += 4;
+    } else {
+      brahmacharyaScore += 1;
+    }
   }
 
   return {

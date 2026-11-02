@@ -22,8 +22,11 @@ import {
   SankalpaHub,
 } from './components';
 import { OnboardingFlow } from './components/Onboarding/OnboardingFlow';
+import { SentinelDashboard } from './components/Sentinel/SentinelDashboard';
+import { SentinelVault } from './components/Sentinel/SentinelVault';
+import { ChariotHome } from './components/Chariot/ChariotHome';
 
-type AppViewTab = 'home' | 'features' | 'vault' | 'breathe' | 'harness' | 'sankalpa' | 'settings' | 'about';
+type AppViewTab = 'home' | 'features' | 'vault' | 'breathe' | 'harness' | 'sankalpa' | 'settings' | 'about' | 'onboarding';
 
 /**
  * Main application content bound to the global IKS context, decoupled account state,
@@ -41,12 +44,23 @@ function MainContent() {
     userName,
   } = useBrahmaPath();
 
+  const isFrontline = preferences?.battlegroundPath === 'frontline';
+
   // First-run vs returning user detection:
   // If user has already entered their name, onboarding is complete and app launches on Home.
-  const hasCompletedOnboarding = Boolean(
-    (userName && userName.trim().length > 0) ||
-      (preferences?.name && preferences.name.trim().length > 0)
-  );
+  // Query param ?onboarding, ?step=..., or #onboarding allows previewing the onboarding flow anytime.
+  const isPreviewingOnboarding =
+    typeof window !== 'undefined' &&
+    (window.location.search.includes('onboarding') ||
+      window.location.search.includes('step=') ||
+      window.location.hash.includes('onboarding'));
+
+  const hasCompletedOnboarding =
+    !isPreviewingOnboarding &&
+    Boolean(
+      (userName && userName.trim().length > 0) ||
+        (preferences?.name && preferences.name.trim().length > 0)
+    );
 
   const handleOnboardingComplete = (name: string) => {
     const validName = name.trim();
@@ -110,8 +124,8 @@ function MainContent() {
     }
   }, [preferences?.notificationsEnabled]);
 
-  // If onboarding is not completed, render <OnboardingFlow /> full-screen
-  if (!hasCompletedOnboarding) {
+  // If onboarding is not completed or requested via activeTab, render <OnboardingFlow /> full-screen
+  if (!hasCompletedOnboarding || activeTab === 'onboarding') {
     return <OnboardingFlow onComplete={handleOnboardingComplete} />;
   }
 
@@ -154,7 +168,7 @@ function MainContent() {
           <main className="p-4 space-y-4">
             {/* 1. HOME TAB: Clean Cognitive Frameworks (Chariot, Gita Quote, Guna Spectrum) */}
             {activeTab === 'home' && (
-              <HomeDashboard onOpenShastraLens={openShastraLens} />
+              isFrontline ? <SentinelDashboard /> : <ChariotHome />
             )}
 
             {/* 2. FEATURES TAB (Sadhana Hub, Impulse Interceptor, Bhava Compass) */}
@@ -164,7 +178,7 @@ function MainContent() {
 
             {/* 3. VAULT TAB (Analytics, 8-Day Rolling Dynamic LineChart (Last 7 Days + Current Day) & Offline Backup) */}
             {activeTab === 'vault' && (
-              <VaultPage />
+              isFrontline ? <SentinelVault /> : <VaultPage />
             )}
 
             {/* 4. BREATHE TAB (Prāṇamaya Kosha Regulation) */}

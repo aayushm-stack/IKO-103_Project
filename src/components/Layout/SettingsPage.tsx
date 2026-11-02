@@ -269,6 +269,65 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         </div>
       </section>
 
+      {/* ARENA OF DUTY (ACTIVE BATTLEGROUND PATH) CARD */}
+      <section
+        aria-label="Arena of Duty"
+        className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-3"
+      >
+        <div className="space-y-0.5">
+          <h2 className="text-sm sm:text-base font-bold text-slate-900">
+            Arena of Duty (Active Battleground Path)
+          </h2>
+          <p className="text-xs text-slate-500">
+            Switch between the Civilian/Student path and the Defense/Sentinel path at any time.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          {/* Button 1: The Inner Battleground */}
+          <button
+            type="button"
+            onClick={() => updatePreferences({ battlegroundPath: 'inner' })}
+            className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between space-y-1 ${
+              (preferences.battlegroundPath ?? 'inner') === 'inner'
+                ? 'bg-emerald-50 border-emerald-700 text-emerald-950 font-bold shadow-xs'
+                : 'bg-slate-50/70 border-slate-200/80 text-slate-700 hover:bg-slate-100/80'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs sm:text-sm font-bold">The Inner Battleground</span>
+              {(preferences.battlegroundPath ?? 'inner') === 'inner' && (
+                <span className="w-2 h-2 rounded-full bg-emerald-700 flex-shrink-0" />
+              )}
+            </div>
+            <span className="text-[11px] font-medium text-slate-500">
+              Path of the Seeker • Student &amp; Civilian
+            </span>
+          </button>
+
+          {/* Button 2: The Frontline Battleground */}
+          <button
+            type="button"
+            onClick={() => updatePreferences({ battlegroundPath: 'frontline' })}
+            className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between space-y-1 ${
+              preferences.battlegroundPath === 'frontline'
+                ? 'bg-emerald-50 border-emerald-700 text-emerald-950 font-bold shadow-xs'
+                : 'bg-slate-50/70 border-slate-200/80 text-slate-700 hover:bg-slate-100/80'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs sm:text-sm font-bold">The Frontline Battleground</span>
+              {preferences.battlegroundPath === 'frontline' && (
+                <span className="w-2 h-2 rounded-full bg-emerald-700 flex-shrink-0" />
+              )}
+            </div>
+            <span className="text-[11px] font-medium text-slate-500">
+              Path of the Sentinel • Defense &amp; Service
+            </span>
+          </button>
+        </div>
+      </section>
+
       {/* ADAPTIVE SCREEN TIME BASELINE SECTION */}
       <section
         aria-label="Screen Time Baseline Configuration"

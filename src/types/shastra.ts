@@ -97,6 +97,8 @@ export interface UserPreferences {
   name?: string;
   /** One-line personal Sankalpa (guiding purpose and intention) */
   sankalpa: string;
+  /** Selected battleground path: civilian Seeker vs. defense Sentinel */
+  battlegroundPath?: 'inner' | 'frontline';
   /** User's baseline Guna constitution */
   baselineGuna: GunaType;
   /** User's dominant Dosha constitution */
