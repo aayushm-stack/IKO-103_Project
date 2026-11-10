@@ -243,6 +243,266 @@ export const SentinelCompass: React.FC<SentinelCompassProps> = ({ className = ''
     }));
   };
 
+  const renderCard = (card: SentinelBhavaCardDef) => {
+    const isExpanded = expandedId === card.id;
+
+    // Check positive log status
+    const positiveLoggedItem = card.isPositive
+      ? todayBhavaLogs?.find(
+          (l) =>
+            (l.cardId === card.id || l.id === card.id) &&
+            (l.isPositive || l.interactionType === 'positive_buffer')
+        )
+      : undefined;
+    const isPositiveActive = Boolean(positiveLoggedItem);
+
+    // Check negative log status
+    const negativeLoggedItem = !card.isPositive
+      ? todayBhavaLogs?.find(
+          (l) =>
+            (l.cardId === card.id || l.id === card.id) &&
+            !l.isPositive &&
+            l.interactionType !== 'positive_buffer'
+        )
+      : undefined;
+    const isEncountered = Boolean(negativeLoggedItem);
+    const isCardResolved = Boolean(negativeLoggedItem?.isResolved);
+
+    const openingLine = card.getOpeningLine ? card.getOpeningLine(env) : '';
+    const cardData = toBhavaCardData(card, env);
+
+    return (
+      <div
+        key={card.id}
+        className={`rounded-2xl border transition-all duration-300 shadow-2xs ${
+          isExpanded
+            ? card.isPositive
+              ? isPositiveActive
+                ? 'border-emerald-400 bg-emerald-50/20 shadow-xs'
+                : 'border-green-300 bg-green-50/20 shadow-xs'
+              : isEncountered && isCardResolved
+              ? 'border-emerald-400 bg-emerald-50/20 shadow-xs'
+              : isEncountered
+              ? 'border-amber-400 bg-amber-50/20 shadow-xs'
+              : 'border-orange-300 bg-orange-50/20 shadow-xs'
+            : 'border-slate-200 bg-white hover:border-slate-300'
+        }`}
+      >
+        {/* Accordion Card Header / Toggle Button */}
+        <button
+          type="button"
+          onClick={() => handleToggleExpand(card.id)}
+          className="w-full flex items-center justify-between p-4 text-left cursor-pointer focus:outline-none"
+          aria-expanded={isExpanded}
+        >
+          <div className="flex flex-col space-y-1 pr-3 min-w-0 flex-1">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug tracking-tight">
+              {card.title}
+            </h3>
+            <p className="text-xs text-slate-500 font-medium">
+              {card.sanskritTrait}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+            {/* Status Badge */}
+            {card.isPositive ? (
+              isPositiveActive ? (
+                <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-2xs">
+                  ✓ Buffer Logged
+                </span>
+              ) : (
+                <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+                  Positive Buffer
+                </span>
+              )
+            ) : isEncountered && !isCardResolved ? (
+              <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs">
+                Active Friction
+              </span>
+            ) : isEncountered && isCardResolved ? (
+              <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
+                ✓ Resolved
+              </span>
+            ) : (
+              <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-orange-100 text-orange-900 border border-orange-200 shadow-2xs">
+                Emotional Friction
+              </span>
+            )}
+
+            <ChevronDown
+              className={`w-4 h-4 text-slate-400 transition-transform duration-300 ease-in-out ${
+                isExpanded
+                  ? card.isPositive
+                    ? 'rotate-180 text-emerald-700'
+                    : 'rotate-180 text-amber-700'
+                  : ''
+              }`}
+            />
+          </div>
+        </button>
+
+        {/* Accordion Expanded Body */}
+        {isExpanded && (
+          <div className="px-4 pb-4 pt-1 border-t border-slate-100 space-y-3.5">
+            {/* Positive Card Body */}
+            {card.isPositive && (
+              <>
+                <div className="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-100 text-xs text-emerald-950 leading-relaxed font-medium">
+                  {card.appreciationMessage}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => togglePositiveBhava(cardData)}
+                  className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2 ${
+                    isPositiveActive
+                      ? 'bg-emerald-700 text-white shadow-xs hover:bg-emerald-800'
+                      : 'bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100'
+                  }`}
+                >
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                  <span>
+                    {isPositiveActive
+                      ? '✓ Buffer Active Today'
+                      : 'Log Positive Buffer'}
+                  </span>
+                </button>
+              </>
+            )}
+
+            {/* Negative Friction Card Body */}
+            {!card.isPositive && (
+              <>
+                {/* Terrain-Adaptive Opening Line */}
+                {openingLine && (
+                  <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200/70 text-xs text-amber-950 leading-relaxed font-medium">
+                    <span className="font-bold block pb-0.5 text-amber-900">
+                      Current Posting Reality:
+                    </span>
+                    {openingLine}
+                  </div>
+                )}
+
+                {/* Sahyogi Buddy Reflection */}
+                {card.buddyReflection && (
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-800 leading-relaxed space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                      Sahyogi Buddy Reflection:
+                    </span>
+                    <p>{card.buddyReflection}</p>
+                  </div>
+                )}
+
+                {/* Dedicated 2-Sentence Script Box for neg_1 */}
+                {card.scriptBox && (
+                  <div className="p-3.5 bg-white rounded-xl border border-emerald-200 text-xs text-slate-800 space-y-1.5 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
+                      2-Sentence Homefront Reassurance Script (Say or Text This Tonight):
+                    </span>
+                    <p className="italic leading-relaxed text-slate-900 bg-emerald-50/40 p-2.5 rounded-lg border border-emerald-100">
+                      {card.scriptBox}
+                    </p>
+                  </div>
+                )}
+
+                {/* Interactive 3-Step Buddy Kit Checklist */}
+                {card.actionSteps && card.actionSteps.length > 0 && (
+                  <div className="space-y-2 pt-1 border-t border-slate-200/70">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                        {card.kitTitle || 'Interactive 3-Step Buddy Kit'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        Tap to check off
+                      </span>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      {card.actionSteps.map((step, sIdx) => {
+                        const stepKey = `${card.id}_step_${sIdx}`;
+                        const isChecked = Boolean(checkedSteps[stepKey]);
+                        return (
+                          <button
+                            key={sIdx}
+                            type="button"
+                            onClick={() => toggleStepCheck(stepKey)}
+                            className={`w-full p-2.5 rounded-xl border text-left transition cursor-pointer flex items-start gap-2.5 ${
+                              isChecked
+                                ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950 font-medium shadow-2xs'
+                                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <div
+                              className={`w-4 h-4 rounded-md border flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                                isChecked
+                                  ? 'bg-emerald-600 border-emerald-700 text-white'
+                                  : 'border-slate-300 bg-white'
+                              }`}
+                            >
+                              {isChecked && (
+                                <Check className="w-3 h-3 text-white stroke-[3]" />
+                              )}
+                            </div>
+                            <span className="text-xs leading-relaxed flex-1">
+                              {step}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons: Log Friction, Resolve, Clear */}
+                <div className="pt-2 border-t border-slate-200/70 space-y-2">
+                  {!isEncountered ? (
+                    <button
+                      type="button"
+                      onClick={() => logNegativeBhavaEncounter(cardData)}
+                      className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-orange-50 text-orange-900 border border-orange-300 hover:bg-orange-100 transition cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <AlertTriangle className="w-4 h-4 text-orange-700 flex-shrink-0" />
+                      <span>Experiencing This Friction</span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleNegativeBhavaResolution(cardData)}
+                        className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2 ${
+                          isCardResolved
+                            ? 'bg-emerald-700 text-white shadow-xs hover:bg-emerald-800'
+                            : 'bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100'
+                        }`}
+                      >
+                        <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                        <span>
+                          {isCardResolved
+                            ? '✓ Friction Resolved'
+                            : '✓ Mark as Resolved'}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => clearBhavaCardToday(card.id)}
+                        className="py-2.5 px-3 rounded-xl font-semibold text-xs bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition cursor-pointer"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className={`w-full space-y-6 ${className}`}>
       {/* ================= TOP SECTION: POSTING ENVIRONMENT BAR ================= */}
@@ -303,275 +563,43 @@ export const SentinelCompass: React.FC<SentinelCompassProps> = ({ className = ''
               Frictions
             </span>
             <span className="font-extrabold text-amber-700 font-mono text-sm sm:text-base">
-              {resolvedNegCount} / {negativeLogs.length} Resolved
+              {negativeLogs.length === 0 ? '0 Logged' : `${resolvedNegCount} of ${negativeLogs.length} Resolved`}
             </span>
           </div>
         </div>
 
-        {/* Accordion List for the 8 Cards */}
-        <div className="space-y-3">
-          {SENTINEL_COMPASS_CARDS.map((card) => {
-            const isExpanded = expandedId === card.id;
+        {/* Accordions Container */}
+        <div className="space-y-6">
+          {/* SECTION 1: 3 POSITIVE BUFFER ACCORDION CARDS */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 px-1">
+              <Sparkles className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                Positive Buffers
+              </h3>
+            </div>
 
-            // Check positive log status
-            const positiveLoggedItem = card.isPositive
-              ? todayBhavaLogs?.find(
-                  (l) =>
-                    (l.cardId === card.id || l.id === card.id) &&
-                    (l.isPositive || l.interactionType === 'positive_buffer')
-                )
-              : undefined;
-            const isPositiveActive = Boolean(positiveLoggedItem);
+            <div className="space-y-3">
+              {SENTINEL_COMPASS_CARDS.filter((c) => c.isPositive).map(renderCard)}
+            </div>
+          </div>
 
-            // Check negative log status
-            const negativeLoggedItem = !card.isPositive
-              ? todayBhavaLogs?.find(
-                  (l) =>
-                    (l.cardId === card.id || l.id === card.id) &&
-                    !l.isPositive &&
-                    l.interactionType !== 'positive_buffer'
-                )
-              : undefined;
-            const isEncountered = Boolean(negativeLoggedItem);
-            const isCardResolved = Boolean(negativeLoggedItem?.isResolved);
+          {/* SECTION 2: 5 NEGATIVE FRICTION ACCORDION CARDS */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center gap-2 px-1">
+              <AlertTriangle className="w-4 h-4 text-amber-600" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                Emotional Frictions &amp; Operational Grounding
+              </h3>
+            </div>
 
-            const openingLine = card.getOpeningLine ? card.getOpeningLine(env) : '';
-            const cardData = toBhavaCardData(card, env);
-
-            return (
-              <div
-                key={card.id}
-                className={`rounded-2xl border transition-all duration-300 shadow-2xs ${
-                  isExpanded
-                    ? card.isPositive
-                      ? isPositiveActive
-                        ? 'border-emerald-400 bg-emerald-50/20 shadow-xs'
-                        : 'border-green-300 bg-green-50/20 shadow-xs'
-                      : isEncountered && isCardResolved
-                      ? 'border-emerald-400 bg-emerald-50/20 shadow-xs'
-                      : isEncountered
-                      ? 'border-amber-400 bg-amber-50/20 shadow-xs'
-                      : 'border-orange-300 bg-orange-50/20 shadow-xs'
-                    : 'border-slate-200 bg-white hover:border-slate-300'
-                }`}
-              >
-                {/* Accordion Card Header / Toggle Button */}
-                <button
-                  type="button"
-                  onClick={() => handleToggleExpand(card.id)}
-                  className="w-full flex items-center justify-between p-4 text-left cursor-pointer focus:outline-none"
-                  aria-expanded={isExpanded}
-                >
-                  <div className="flex flex-col space-y-1 pr-3 min-w-0 flex-1">
-                    <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug tracking-tight">
-                      {card.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 font-medium">
-                      {card.sanskritTrait}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                    {/* Status Badge */}
-                    {card.isPositive ? (
-                      isPositiveActive ? (
-                        <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-2xs">
-                          Buffer Logged (+20)
-                        </span>
-                      ) : (
-                        <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
-                          Positive Buffer
-                        </span>
-                      )
-                    ) : isEncountered && !isCardResolved ? (
-                      <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs">
-                        Active Friction
-                      </span>
-                    ) : isEncountered && isCardResolved ? (
-                      <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
-                        Resolved (+15)
-                      </span>
-                    ) : (
-                      <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-orange-100 text-orange-900 border border-orange-200 shadow-2xs">
-                        Negative Friction
-                      </span>
-                    )}
-
-                    <ChevronDown
-                      className={`w-4 h-4 text-slate-400 transition-transform duration-300 ease-in-out ${
-                        isExpanded
-                          ? card.isPositive
-                            ? 'rotate-180 text-emerald-700'
-                            : 'rotate-180 text-amber-700'
-                          : ''
-                      }`}
-                    />
-                  </div>
-                </button>
-
-                {/* Accordion Expanded Body */}
-                {isExpanded && (
-                  <div className="px-4 pb-4 pt-1 border-t border-slate-100 space-y-3.5">
-                    {/* Positive Card Body */}
-                    {card.isPositive && (
-                      <>
-                        <div className="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-100 text-xs text-emerald-950 leading-relaxed font-medium">
-                          {card.appreciationMessage}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => togglePositiveBhava(cardData)}
-                          className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2 ${
-                            isPositiveActive
-                              ? 'bg-emerald-700 text-white shadow-xs hover:bg-emerald-800'
-                              : 'bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100'
-                          }`}
-                        >
-                          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                          <span>
-                            {isPositiveActive
-                              ? '✓ Buffer Active Today (+20 Surplus)'
-                              : 'Log Positive Buffer (+20 Surplus)'}
-                          </span>
-                        </button>
-                      </>
-                    )}
-
-                    {/* Negative Friction Card Body */}
-                    {!card.isPositive && (
-                      <>
-                        {/* Terrain-Adaptive Opening Line */}
-                        {openingLine && (
-                          <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200/70 text-xs text-amber-950 leading-relaxed font-medium">
-                            <span className="font-bold block pb-0.5 text-amber-900">
-                              Current Posting Reality:
-                            </span>
-                            {openingLine}
-                          </div>
-                        )}
-
-                        {/* Sahyogi Buddy Reflection */}
-                        {card.buddyReflection && (
-                          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-800 leading-relaxed space-y-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                              Sahyogi Buddy Reflection:
-                            </span>
-                            <p>{card.buddyReflection}</p>
-                          </div>
-                        )}
-
-                        {/* Dedicated 2-Sentence Script Box for neg_1 */}
-                        {card.scriptBox && (
-                          <div className="p-3.5 bg-white rounded-xl border border-emerald-200 text-xs text-slate-800 space-y-1.5 shadow-2xs">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
-                              2-Sentence Homefront Reassurance Script (Say or Text This Tonight):
-                            </span>
-                            <p className="italic leading-relaxed text-slate-900 bg-emerald-50/40 p-2.5 rounded-lg border border-emerald-100">
-                              {card.scriptBox}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Interactive 3-Step Buddy Kit Checklist */}
-                        {card.actionSteps && card.actionSteps.length > 0 && (
-                          <div className="space-y-2 pt-1 border-t border-slate-200/70">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                                {card.kitTitle || 'Interactive 3-Step Buddy Kit'}
-                              </span>
-                              <span className="text-[10px] text-slate-400 font-medium">
-                                Tap to check off
-                              </span>
-                            </div>
-
-                            <div className="space-y-1.5">
-                              {card.actionSteps.map((step, sIdx) => {
-                                const stepKey = `${card.id}_step_${sIdx}`;
-                                const isChecked = Boolean(checkedSteps[stepKey]);
-                                return (
-                                  <button
-                                    key={sIdx}
-                                    type="button"
-                                    onClick={() => toggleStepCheck(stepKey)}
-                                    className={`w-full p-2.5 rounded-xl border text-left transition cursor-pointer flex items-start gap-2.5 ${
-                                      isChecked
-                                        ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950 font-medium shadow-2xs'
-                                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                                    }`}
-                                  >
-                                    <div
-                                      className={`w-4 h-4 rounded-md border flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-                                        isChecked
-                                          ? 'bg-emerald-600 border-emerald-700 text-white'
-                                          : 'border-slate-300 bg-white'
-                                      }`}
-                                    >
-                                      {isChecked && (
-                                        <Check className="w-3 h-3 text-white stroke-[3]" />
-                                      )}
-                                    </div>
-                                    <span className="text-xs leading-relaxed flex-1">
-                                      {step}
-                                    </span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Action Buttons: Log Friction, Resolve, Clear */}
-                        <div className="pt-2 border-t border-slate-200/70 space-y-2">
-                          {!isEncountered ? (
-                            <button
-                              type="button"
-                              onClick={() => logNegativeBhavaEncounter(cardData)}
-                              className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-orange-50 text-orange-900 border border-orange-300 hover:bg-orange-100 transition cursor-pointer flex items-center justify-center gap-2"
-                            >
-                              <AlertTriangle className="w-4 h-4 text-orange-700 flex-shrink-0" />
-                              <span>Experiencing This Friction (-15)</span>
-                            </button>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => toggleNegativeBhavaResolution(cardData)}
-                                className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2 ${
-                                  isCardResolved
-                                    ? 'bg-emerald-700 text-white shadow-xs hover:bg-emerald-800'
-                                    : 'bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100'
-                                }`}
-                              >
-                                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                                <span>
-                                  {isCardResolved
-                                    ? '✓ Friction Resolved (+15)'
-                                    : '✓ Mark as Resolved (+15 Reclaimed)'}
-                                </span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => clearBhavaCardToday(card.id)}
-                                className="py-2.5 px-3 rounded-xl font-semibold text-xs bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition cursor-pointer"
-                              >
-                                Clear
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+            <div className="space-y-3">
+              {SENTINEL_COMPASS_CARDS.filter((c) => !c.isPositive).map(renderCard)}
+            </div>
+          </div>
         </div>
 
-        {/* ================= STATIC SAFEGUARD & CRISIS SUPPORT CARD ================= */}
+                {/* ================= STATIC SAFEGUARD & CRISIS SUPPORT CARD ================= */}
         <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 space-y-1.5 text-xs text-slate-600">
           <div className="flex items-center gap-2">
             <LifeBuoy className="w-4 h-4 text-emerald-800 flex-shrink-0" />

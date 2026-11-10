@@ -336,14 +336,9 @@ export const InterceptorMobile: React.FC<InterceptorMobileProps> = ({
 
         {/* ================= STEP 1: 5 RHYTHM-ADAPTIVE FIELD TRIGGERS ================= */}
         <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
-              Step 1 — What Just Hit Your Mind?
-            </h3>
-            <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-              Trigger Identification
-            </span>
-          </div>
+          <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
+            Step 1 — What Just Hit Your Mind?
+          </h3>
           <p className="text-xs text-slate-500 leading-relaxed">
             Select the active friction or urge pulling at your attention right now:
           </p>
@@ -418,18 +413,13 @@ export const InterceptorMobile: React.FC<InterceptorMobileProps> = ({
 
         {/* ================= STEP 3: ACTIVE COGNITIVE REFRAME ================= */}
         <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
-                Step 3 — Active Cognitive Reframe
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Vitarka (Compulsive Impulse) vs Pratipaksha (Steady Counter-Thought)
-              </p>
-            </div>
-            <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-              YS 2.33
-            </span>
+          <div>
+            <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
+              Step 3 — Active Cognitive Reframe
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Vitarka (Compulsive Impulse) vs Pratipaksha (Steady Counter-Thought)
+            </p>
           </div>
 
           {/* Clean inner grey box: 2 Reframe Suggestions for Selected Trigger */}
@@ -521,14 +511,9 @@ export const InterceptorMobile: React.FC<InterceptorMobileProps> = ({
 
         {/* ================= STEP 4: 6 CURATED MICRO-SWAPS ================= */}
         <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
-              Step 4 — Grounding Micro-Swap
-            </h3>
-            <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-              Immediate Somatic Pivot
-            </span>
-          </div>
+          <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
+            Step 4 — Grounding Micro-Swap
+          </h3>
           <p className="text-xs text-slate-500 leading-relaxed">
             Pick 1 small physical or mental action to discharge restlessness and re-anchor your awareness:
           </p>

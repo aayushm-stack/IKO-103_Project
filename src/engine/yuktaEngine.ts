@@ -275,8 +275,8 @@ export function getPillarScores(
 
 /**
  * Computes an integer Yukta balance score (0-100) based on Bhagavad Gita 6.17.
- * Moderation is rewarded; both sensory/sleep deprivation and excess are penalized.
- * Supports independently logged pillars with proportional dynamic denominators.
+ * Strictly additive scale: unlogged pillars strictly contribute 0.
+ * The final score is the strict sum: aharaScore + nidraScore + brahmacharyaScore.
  */
 export function computeYuktaScore(
   ahara: AharaLog,
@@ -284,33 +284,9 @@ export function computeYuktaScore(
   brahmacharya: BrahmacharyaLog,
   loggedPillars?: { ahara?: boolean; nidra?: boolean; brahmacharya?: boolean }
 ): number {
-  const scores = getPillarScores(ahara, nidra, brahmacharya);
-
-  const pillars = !loggedPillars
-    ? { ahara: true, nidra: true, brahmacharya: true }
-    : loggedPillars;
-
-  let earned = 0;
-  let maxPossible = 0;
-
-  if (pillars.ahara) {
-    earned += scores.ahara;
-    maxPossible += 34;
-  }
-  if (pillars.nidra) {
-    earned += scores.nidra;
-    maxPossible += 33;
-  }
-  if (pillars.brahmacharya) {
-    earned += scores.brahmacharya;
-    maxPossible += 33;
-  }
-
-  if (maxPossible === 0) {
-    return 0;
-  }
-
-  return Math.min(100, Math.max(0, Math.round((earned / maxPossible) * 100)));
+  const scores = getPillarScores(ahara, nidra, brahmacharya, loggedPillars);
+  const yuktaScore = scores.ahara + scores.nidra + scores.brahmacharya;
+  return Math.min(100, Math.max(0, Math.round(yuktaScore)));
 }
 
 /** Export calculateYuktaScore alias for full compatibility */

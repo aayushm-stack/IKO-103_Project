@@ -133,7 +133,7 @@ export const CompassMobile: React.FC<CompassMobileProps> = ({ className = '' }) 
               Net Balance
             </span>
             <span className="font-extrabold text-emerald-800 font-mono text-sm sm:text-base">
-              {chariotStatus?.bhavaScore ?? 0} of 100
+              {chariotStatus?.bhavaScore ?? 0}/100
             </span>
           </div>
 
@@ -163,7 +163,7 @@ export const CompassMobile: React.FC<CompassMobileProps> = ({ className = '' }) 
             <div className="flex items-center gap-2 px-1">
               <Sparkles className="w-4 h-4 text-emerald-700" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                Positive Buffers (+20 Surplus Each)
+                Positive Buffers
               </h3>
             </div>
 
@@ -208,7 +208,7 @@ export const CompassMobile: React.FC<CompassMobileProps> = ({ className = '' }) 
                       <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                         {isPositiveActive ? (
                           <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-2xs">
-                            Buffer Logged (+20)
+                            ✓ Buffer Logged
                           </span>
                         ) : (
                           <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
@@ -251,14 +251,14 @@ export const CompassMobile: React.FC<CompassMobileProps> = ({ className = '' }) 
                           {isPositiveActive ? (
                             <div className="flex flex-col text-center leading-tight">
                               <span className="font-bold text-xs sm:text-sm">
-                                ✓ Buffer Active Today (+20 Surplus)
+                                ✓ Buffer Active Today
                               </span>
                               <span className="text-[10px] sm:text-[11px] font-normal text-emerald-100">
                                 Tap to undo
                               </span>
                             </div>
                           ) : (
-                            <span>Log Positive Buffer (+20 Surplus)</span>
+                            <span>Log Positive Buffer</span>
                           )}
                         </button>
                       </div>
@@ -328,7 +328,7 @@ export const CompassMobile: React.FC<CompassMobileProps> = ({ className = '' }) 
                           </span>
                         ) : isEncountered && isCardResolved ? (
                           <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
-                            Resolved (+15)
+                            ✓ Resolved
                           </span>
                         ) : (
                           <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-orange-100 text-orange-900 border border-orange-200 shadow-2xs">
@@ -490,7 +490,7 @@ export const CompassMobile: React.FC<CompassMobileProps> = ({ className = '' }) 
                               <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />
                               <div className="flex flex-col text-center leading-tight">
                                 <span className="font-bold text-xs sm:text-sm">
-                                  Friction Resolved (+15 Surplus)
+                                  ✓ Friction Resolved
                                 </span>
                                 <span className="text-[10px] sm:text-[11px] font-normal text-emerald-100">
                                   Tap to reopen

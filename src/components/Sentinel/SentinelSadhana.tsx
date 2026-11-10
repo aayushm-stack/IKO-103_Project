@@ -439,7 +439,7 @@ export const SentinelSadhana: React.FC<SentinelSadhanaProps> = ({ className = ''
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm">Āhāra</h3>
                   <p className="text-xs text-slate-500 font-normal">
-                    Field Fuel, Digestive Fire (Jaṭharāgni) &amp; Input Shielding (Max 34 pts)
+                    Field Fuel, Digestive Fire (Jaṭharāgni) &amp; Input Shielding
                   </p>
                 </div>
               </div>
@@ -648,9 +648,9 @@ export const SentinelSadhana: React.FC<SentinelSadhanaProps> = ({ className = ''
                   {activeFeedbackPillar === 'ahara' ? (
                     <span>✓ Āhāra Recorded!</span>
                   ) : !isAharaLogged ? (
-                    <span>Log Āhāra Field Fuel (Max 34 pts)</span>
+                    <span>Log Āhāra Field Fuel</span>
                   ) : (
-                    <span>Update Āhāra Field Fuel (Max 34 pts)</span>
+                    <span>Update Āhāra Field Fuel</span>
                   )}
                 </button>
               </div>
@@ -667,7 +667,7 @@ export const SentinelSadhana: React.FC<SentinelSadhanaProps> = ({ className = ''
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm">Nidrā</h3>
                   <p className="text-xs text-slate-500 font-normal">
-                    Split-Watch Rest &amp; Post-Sentry Power-Down (Max 33 pts)
+                    Split-Watch Rest &amp; Post-Sentry Power-Down
                   </p>
                 </div>
               </div>
@@ -847,9 +847,9 @@ export const SentinelSadhana: React.FC<SentinelSadhanaProps> = ({ className = ''
                   {activeFeedbackPillar === 'nidra' ? (
                     <span>✓ Nidrā Recorded!</span>
                   ) : !isNidraLogged ? (
-                    <span>Log Nidrā Watch Recovery (Max 33 pts)</span>
+                    <span>Log Nidrā Watch Recovery</span>
                   ) : (
-                    <span>Update Nidrā Watch Recovery (Max 33 pts)</span>
+                    <span>Update Nidrā Watch Recovery</span>
                   )}
                 </button>
               </div>
@@ -866,7 +866,7 @@ export const SentinelSadhana: React.FC<SentinelSadhanaProps> = ({ className = ''
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm">Brahmacharya (Vīrya)</h3>
                   <p className="text-xs text-slate-500 font-normal">
-                    Coping Tank Reserve, Grounding &amp; Buddy Bond (Max 33 pts)
+                    Coping Tank Reserve, Grounding &amp; Buddy Bond
                   </p>
                 </div>
               </div>
@@ -1019,9 +1019,9 @@ export const SentinelSadhana: React.FC<SentinelSadhanaProps> = ({ className = ''
                   {activeFeedbackPillar === 'brahmacharya' ? (
                     <span>✓ Vīrya Recorded!</span>
                   ) : !isBrahmacharyaLogged ? (
-                    <span>Log Vīrya &amp; Buddy Readiness (Max 33 pts)</span>
+                    <span>Log Vīrya &amp; Buddy Readiness</span>
                   ) : (
-                    <span>Update Vīrya &amp; Buddy Readiness (Max 33 pts)</span>
+                    <span>Update Vīrya &amp; Buddy Readiness</span>
                   )}
                 </button>
               </div>

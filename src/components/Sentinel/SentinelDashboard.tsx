@@ -51,6 +51,8 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
     updatePreferences,
     openShastraLens,
     setActiveView,
+    todaySadhana,
+    todayBhavaLogs,
   } = useBrahmaPath();
 
   const handleOpenLens = onOpenShastraLens ?? openShastraLens;
@@ -75,6 +77,14 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
   const gateScore = chariotStatus?.gateScore ?? 75;
   const bhavaScore = chariotStatus?.bhavaScore ?? 75;
   const sensoryAvg = (yuktaScore + bhavaScore) / 2;
+
+  const upanishadQuote =
+    chariotStatus?.upanishadAllegory ||
+    (normalizedState === 'Resting' || normalizedState === 'Brisk'
+      ? 'Katha Upanishad 1.3.3: "Know the Self as the rider in the chariot, the body as the chariot, the intellect as the charioteer, and the mind as the reins."'
+      : normalizedState === 'Calm'
+      ? 'Katha Upanishad 1.3.6: "He whose mind is collected and whose intellect is discriminating—his senses are subdued like well-trained horses under a noble charioteer."'
+      : 'Katha Upanishad 1.3.5: "He whose mind is uncollected and whose intellect lacks discrimination—his senses are unruly like vicious horses for a charioteer."');
 
   // Dynamic status values for 2x2 grid
   let reinsShortValue = 'At Rest';
@@ -220,6 +230,63 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
           </div>
         </div>
 
+        {/* Dynamic State Banner Blended with Nearby UI */}
+        {normalizedState === 'Resting' && (
+          <div className="p-4 bg-sky-50/90 rounded-2xl border border-sky-200/90 text-sky-950 flex items-start gap-3 shadow-2xs">
+            <Sparkles className="w-5 h-5 text-sky-600 flex-shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-sky-800">
+                Awaken The Charioteer
+              </h4>
+              <p className="text-xs sm:text-sm font-medium text-sky-900 leading-relaxed">
+                A new dawn begins. Log your morning Sadhana to awaken the charioteer (Buddhi) and take the reins.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {normalizedState === 'Calm' && (
+          <div className="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200/80 text-emerald-950 flex items-start gap-3 shadow-2xs">
+            <Sparkles className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+                Sattvic Poise &amp; Steady Gait
+              </h4>
+              <p className="text-xs sm:text-sm font-medium text-emerald-900 leading-relaxed">
+                Your senses (horses) are tranquil and harmonious. The intellect (Buddhi) holds the reins with effortless clarity.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {normalizedState === 'Brisk' && (
+          <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200/80 text-amber-950 flex items-start gap-3 shadow-2xs">
+            <Sparkles className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-800">
+                Active Drive &amp; Focused Momentum
+              </h4>
+              <p className="text-xs sm:text-sm font-medium text-amber-900 leading-relaxed">
+                Dynamic forward energy. Keep the reins (Manas) taut to ensure Rajas fuels constructive action rather than distraction.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {normalizedState === 'Galloping' && (
+          <div className="p-4 bg-rose-50/80 rounded-2xl border border-rose-200/80 text-rose-950 flex items-start gap-3 shadow-2xs">
+            <Sparkles className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-rose-800">
+                Unchecked Impulse — Reclaim the Reins
+              </h4>
+              <p className="text-xs sm:text-sm font-medium text-rose-900 leading-relaxed">
+                The senses are pulling aggressively at the reins. Engage an Impulse Interceptor micro-swap or deep breath to restore discriminative intellect.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* 2x2 Status Grid */}
         <div className="grid grid-cols-2 gap-3 pt-1">
           {/* Ratha Gait */}
@@ -302,9 +369,9 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
         {/* 3-Pillar Horizontal Breakdown Bars with Dynamic Composure Weights */}
         {normalizedState !== 'Resting' && (() => {
           const isInterceptorActive = Boolean(chariotStatus?.interceptionStats?.hasActivityToday);
-          const sadhanaWeightBadge = isInterceptorActive ? '50% wt' : '65% wt';
-          const bhavaWeightBadge = isInterceptorActive ? '25% wt' : '35% wt';
           const prqScore = chariotStatus?.interceptionStats?.prqScore ?? gateScore;
+          const isSadhanaLogged = (chariotStatus?.loggedPillarCount ?? 0) > 0 || Boolean(todaySadhana);
+          const isBhavaLogged = Boolean(todayBhavaLogs && todayBhavaLogs.length > 0);
 
           return (
             <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
@@ -320,17 +387,22 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
                       <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
                       Duty &amp; Tactical Rest (Daily Sadhana)
                     </span>
-                    <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                      <span>{yuktaScore}/100</span>
-                      <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded-md border border-slate-300/60">
-                        {sadhanaWeightBadge}
+                    {isSadhanaLogged ? (
+                      <span className="font-bold text-slate-900">
+                        {yuktaScore}/100
                       </span>
-                    </span>
+                    ) : (
+                      <span className="text-slate-400 font-medium text-xs">
+                        Not logged
+                      </span>
+                    )}
                   </div>
                   <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
                     <div
                       style={{
-                        width: `${Math.min(100, Math.max(0, yuktaScore))}%`,
+                        width: isSadhanaLogged
+                          ? `${Math.min(100, Math.max(0, yuktaScore))}%`
+                          : '0%',
                         backgroundColor: '#D97706',
                       }}
                       className="h-full rounded-full transition-all duration-500"
@@ -346,15 +418,12 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
                       Impulse &amp; Krodha Restraint — Manas
                     </span>
                     {isInterceptorActive ? (
-                      <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                        <span>{prqScore}/100</span>
-                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded-md border border-slate-300/60">
-                          25% wt
-                        </span>
+                      <span className="font-bold text-slate-900">
+                        {prqScore}/100
                       </span>
                     ) : (
                       <span className="text-slate-400 font-medium text-xs">
-                        Standby (Not logged today — 0% wt)
+                        Not logged
                       </span>
                     )}
                   </div>
@@ -378,17 +447,22 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
                       <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
                       Unit &amp; Homefront Poise — Bhāva Compass
                     </span>
-                    <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                      <span>{bhavaScore}/100</span>
-                      <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded-md border border-slate-300/60">
-                        {bhavaWeightBadge}
+                    {isBhavaLogged ? (
+                      <span className="font-bold text-slate-900">
+                        {bhavaScore}/100
                       </span>
-                    </span>
+                    ) : (
+                      <span className="text-slate-400 font-medium text-xs">
+                        Not logged
+                      </span>
+                    )}
                   </div>
                   <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
                     <div
                       style={{
-                        width: `${Math.min(100, Math.max(0, bhavaScore))}%`,
+                        width: isBhavaLogged
+                          ? `${Math.min(100, Math.max(0, bhavaScore))}%`
+                          : '0%',
                         backgroundColor: '#D97706',
                       }}
                       className="h-full rounded-full transition-all duration-500"
@@ -447,6 +521,13 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
             </p>
           </div>
         </div>
+
+        {/* Classical Exegesis Quote (Katha Upanishad Allegory) */}
+        {upanishadQuote && (
+          <div className="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-200/80 text-[11px] text-amber-900/90 leading-relaxed font-serif italic shadow-2xs">
+            {upanishadQuote}
+          </div>
+        )}
       </div>
 
       {/* ============================================================== */}

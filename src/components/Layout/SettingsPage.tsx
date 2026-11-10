@@ -571,13 +571,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               About BrahmaPath
             </h2>
             <p className="text-[11px] text-slate-500">
-              Understanding your 12 inner equilibrium tools
+              Purpose, dual-stage architecture & core mind-body engines
             </p>
           </div>
         </div>
 
         <p className="text-xs text-slate-500 leading-relaxed mb-3">
-          Read a complete walkthrough of all 12 features in BrahmaPath and know how they work together to support your daily equilibrium.
+          Read a complete architectural walkthrough of BrahmaPath's core purpose, dual-stage engines, and mind-body tools.
         </p>
 
         <button

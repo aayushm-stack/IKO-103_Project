@@ -393,14 +393,9 @@ export const SentinelPauseGate: React.FC<SentinelPauseGateProps> = ({ className 
 
         {/* ================= STEP 1: WHAT JUST HIT YOUR MIND ================= */}
         <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
-              Step 1 — What Just Hit Your Mind, Brother?
-            </h3>
-            <span className="text-[10px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-              Field Triggers
-            </span>
-          </div>
+          <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
+            Step 1 — What Just Hit Your Mind, Brother?
+          </h3>
           <p className="text-xs text-slate-500 leading-relaxed">
             Select the operational spark causing acute tension right now to unlock matching Battle-Buddy reframes:
           </p>
@@ -480,18 +475,13 @@ export const SentinelPauseGate: React.FC<SentinelPauseGateProps> = ({ className 
 
         {/* ================= STEP 3: INTERACTIVE BATTLE-BUDDY REFRAME ================= */}
         <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
-                Step 3 — Interactive Battle-Buddy Reframe
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Vitarka (Raw Compulsive Surge) vs Pratipaksha (Sattvic Buddhi Counter-Voice)
-              </p>
-            </div>
-            <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-              YS 2.33
-            </span>
+          <div>
+            <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
+              Step 3 — Interactive Battle-Buddy Reframe
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Vitarka (Raw Compulsive Surge) vs Pratipaksha (Sattvic Buddhi Counter-Voice)
+            </p>
           </div>
 
           {/* Quick-Tap Battle-Buddy Cards for Selected Trigger */}
@@ -627,14 +617,9 @@ export const SentinelPauseGate: React.FC<SentinelPauseGateProps> = ({ className 
 
         {/* ================= STEP 5: TERRAIN-SMART PHYSICAL RESETS ================= */}
         <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
-              Step 5 — Terrain-Smart Physical Resets
-            </h3>
-            <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-              {TERRAIN_LABELS[env]}
-            </span>
-          </div>
+          <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
+            Step 5 — Terrain-Smart Physical Resets
+          </h3>
           <p className="text-xs text-slate-500 leading-relaxed">
             Pick 1 physical reset engineered for your current terrain to discharge adrenaline from your body:
           </p>

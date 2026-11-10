@@ -420,9 +420,9 @@ export const ChariotHome: React.FC<ChariotHomeProps> = ({
         {/* Weighted Capacity Breakdown Card */}
         {normalizedState !== 'Resting' && activeReport && (() => {
           const isInterceptorActive = Boolean(activeReport.interceptionStats?.hasActivityToday);
-          const sadhanaWeightBadge = isInterceptorActive ? '50% wt' : '65% wt';
-          const bhavaWeightBadge = isInterceptorActive ? '25% wt' : '35% wt';
           const prqScore = activeReport.interceptionStats?.prqScore ?? activeReport.gateScore;
+          const isSadhanaLogged = (activeReport.loggedPillarCount ?? 0) > 0 || Boolean(context.todayLog) || Boolean(context.todaySadhana);
+          const isBhavaLogged = Boolean(context.todayBhavaLogs && context.todayBhavaLogs.length > 0);
 
           return (
             <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
@@ -440,17 +440,22 @@ export const ChariotHome: React.FC<ChariotHomeProps> = ({
                       <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
                       Daily Sadhana Foundation
                     </span>
-                    <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                      <span>{activeReport.yuktaScore}/100</span>
-                      <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded-md border border-slate-300/60">
-                        {sadhanaWeightBadge}
+                    {isSadhanaLogged ? (
+                      <span className="font-bold text-slate-900">
+                        {activeReport.yuktaScore}/100
                       </span>
-                    </span>
+                    ) : (
+                      <span className="text-slate-400 font-medium text-xs">
+                        Not logged
+                      </span>
+                    )}
                   </div>
                   <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
                     <div
                       style={{
-                        width: `${Math.min(100, Math.max(0, activeReport.yuktaScore))}%`,
+                        width: isSadhanaLogged
+                          ? `${Math.min(100, Math.max(0, activeReport.yuktaScore))}%`
+                          : '0%',
                         backgroundColor: '#D97706',
                       }}
                       className="h-full rounded-full transition-all duration-500"
@@ -466,15 +471,12 @@ export const ChariotHome: React.FC<ChariotHomeProps> = ({
                       Impulse Interceptor — Manas
                     </span>
                     {isInterceptorActive ? (
-                      <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                        <span>{prqScore}/100</span>
-                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded-md border border-slate-300/60">
-                          25% wt
-                        </span>
+                      <span className="font-bold text-slate-900">
+                        {prqScore}/100
                       </span>
                     ) : (
                       <span className="text-slate-400 font-medium text-xs">
-                        Standby (Not logged today — 0% wt)
+                        Not logged
                       </span>
                     )}
                   </div>
@@ -498,17 +500,22 @@ export const ChariotHome: React.FC<ChariotHomeProps> = ({
                       <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
                       Bhāva Compass — Heart Conditioning
                     </span>
-                    <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                      <span>{activeReport.bhavaScore}/100</span>
-                      <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded-md border border-slate-300/60">
-                        {bhavaWeightBadge}
+                    {isBhavaLogged ? (
+                      <span className="font-bold text-slate-900">
+                        {activeReport.bhavaScore}/100
                       </span>
-                    </span>
+                    ) : (
+                      <span className="text-slate-400 font-medium text-xs">
+                        Not logged
+                      </span>
+                    )}
                   </div>
                   <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
                     <div
                       style={{
-                        width: `${Math.min(100, Math.max(0, activeReport.bhavaScore))}%`,
+                        width: isBhavaLogged
+                          ? `${Math.min(100, Math.max(0, activeReport.bhavaScore))}%`
+                          : '0%',
                         backgroundColor: '#D97706',
                       }}
                       className="h-full rounded-full transition-all duration-500"

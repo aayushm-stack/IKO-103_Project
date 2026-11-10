@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AccountProvider } from './context/AccountContext';
 import { BrahmaPathProvider, useBrahmaPath } from './context/BrahmaPathContext';
-
 import {
   scheduleDailySmritiAlarms,
   cancelDailySmritiAlarms,
@@ -25,7 +24,7 @@ import { OnboardingFlow } from './components/Onboarding/OnboardingFlow';
 import { SentinelDashboard } from './components/Sentinel/SentinelDashboard';
 import { SentinelVault } from './components/Sentinel/SentinelVault';
 
-type AppViewTab = 'home' | 'features' | 'vault' | 'breathe' | 'harness' | 'sankalpa' | 'settings' | 'about' | 'onboarding';
+type AppViewTab = 'home' | 'features' | 'vault' | 'breathe' | 'sankalpa' | 'settings' | 'about' | 'onboarding';
 
 /**
  * Main application content bound to the global IKS context, decoupled account state,
@@ -130,88 +129,63 @@ function MainContent() {
 
   return (
     <div className="min-h-screen bg-parchment text-charcoal font-sans antialiased">
-      {/* ================= VIEW 1: DEVELOPER / JUDGE TEST HARNESS ================= */}
+      {/* ================= PRODUCTION MOBILE-FIRST UI ================= */}
+      <AppLayout>
+        {/* Top Bar with Sankalpa Goal Centre, isolated Settings modal trigger, and invisible judge double-click */}
+        <TopBar
+          onSankalpaClick={() => setActiveTab(activeTab === 'sankalpa' ? 'home' : 'sankalpa')}
+          isSankalpaActive={activeTab === 'sankalpa'}
+          onSettingsClick={() => setActiveTab(activeTab === 'settings' || activeTab === 'about' ? 'home' : 'settings')}
+          isSettingsActive={activeTab === 'settings' || activeTab === 'about'}
+        />
 
-        <div>
-          {/* Header to quickly navigate back to the Mobile UI */}
-          <div className="bg-[#1E293B] text-white text-xs px-4 py-2.5 flex items-center justify-between border-b border-slate-700 sticky top-0 z-50 shadow-md">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-              <span className="font-semibold tracking-wide">
-                BrahmaPath Dev / Judge Harness Mode
-              </span>
+        <main className="p-4 space-y-4">
+          {/* 1. HOME TAB: Clean Cognitive Frameworks (Chariot, Gita Quote, Guna Spectrum) */}
+          {activeTab === 'home' && (
+            isFrontline ? <SentinelDashboard /> : <HomeDashboard onOpenShastraLens={openShastraLens} />
+          )}
+
+          {/* 2. FEATURES TAB (Sadhana Hub, Impulse Interceptor, Bhava Compass) */}
+          {activeTab === 'features' && (
+            <FeaturesPage />
+          )}
+
+          {/* 3. VAULT TAB (Analytics, 8-Day Rolling Dynamic LineChart (Last 7 Days + Current Day) & Offline Backup) */}
+          {activeTab === 'vault' && (
+            isFrontline ? <SentinelVault /> : <VaultPage />
+          )}
+
+          {/* 4. BREATHE TAB (Prāṇamaya Kosha Regulation) */}
+          {activeTab === 'breathe' && (
+            <div className="space-y-4">
+              <BreathePage />
             </div>
-            <button
-              type="button"
-              onClick={() => setActiveTab('home')}
-              className="px-3.5 py-1.5 bg-[#D97706] text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition flex items-center gap-1.5 shadow-xs cursor-pointer"
-            >
-              Back to Mobile UI
-            </button>
-          </div>
+          )}
 
-          {/* DevHarness component kept 100% intact for developer/judge evaluation */}
-          <DevHarness />
-        </div>
-      ) : (
-        /* ================= VIEW 2: PRODUCTION MOBILE-FIRST UI ================= */
-        <AppLayout>
-          {/* Top Bar with Sankalpa Goal Centre, isolated Settings modal trigger, and invisible judge double-click */}
-          <TopBar
-            onSankalpaClick={() => setActiveTab(activeTab === 'sankalpa' ? 'home' : 'sankalpa')}
-            isSankalpaActive={activeTab === 'sankalpa'}
-            onSettingsClick={() => setActiveTab(activeTab === 'settings' || activeTab === 'about' ? 'home' : 'settings')}
-            isSettingsActive={activeTab === 'settings' || activeTab === 'about'}
-          />
+          {/* 5. SANKALPA VIEWPORT (Personalised Intentions & Goals) */}
+          {activeTab === 'sankalpa' && (
+            <div className="space-y-4">
+              <SankalpaHub onOpenShastraLens={openShastraLens} />
+            </div>
+          )}
 
-          <main className="p-4 space-y-4">
-            {/* 1. HOME TAB: Clean Cognitive Frameworks (Chariot, Gita Quote, Guna Spectrum) */}
-            {activeTab === 'home' && (
-              isFrontline ? <SentinelDashboard /> : <HomeDashboard onOpenShastraLens={openShastraLens} />
-            )}
+          {/* 6. SETTINGS VIEWPORT (User Profile & Danger Zone) */}
+          {activeTab === 'settings' && (
+            <SettingsPage />
+          )}
 
-            {/* 2. FEATURES TAB (Sadhana Hub, Impulse Interceptor, Bhava Compass) */}
-            {activeTab === 'features' && (
-              <FeaturesPage />
-            )}
+          {/* 7. ABOUT VIEWPORT (Dedicated Walkthrough & Niṣkāma Bhāva Offering) */}
+          {(activeTab === 'about' || activeView === 'about') && (
+            <AboutPage onBack={() => setActiveTab('settings')} />
+          )}
+        </main>
 
-            {/* 3. VAULT TAB (Analytics, 8-Day Rolling Dynamic LineChart (Last 7 Days + Current Day) & Offline Backup) */}
-            {activeTab === 'vault' && (
-              isFrontline ? <SentinelVault /> : <VaultPage />
-            )}
-
-            {/* 4. BREATHE TAB (Prāṇamaya Kosha Regulation) */}
-            {activeTab === 'breathe' && (
-              <div className="space-y-4">
-                <BreathePage />
-              </div>
-            )}
-
-            {/* 5. SANKALPA VIEWPORT (Personalised Intentions & Goals) */}
-            {activeTab === 'sankalpa' && (
-              <div className="space-y-4">
-                <SankalpaHub onOpenShastraLens={openShastraLens} />
-              </div>
-            )}
-
-            {/* 6. SETTINGS VIEWPORT (User Profile & Danger Zone) */}
-            {activeTab === 'settings' && (
-              <SettingsPage />
-            )}
-
-            {/* 7. ABOUT VIEWPORT (Dedicated Walkthrough & Niṣkāma Bhāva Offering) */}
-            {(activeTab === 'about' || activeView === 'about') && (
-              <AboutPage onBack={() => setActiveTab('settings')} />
-            )}
-          </main>
-
-          {/* 4-Icon Bottom Navigation */}
-          <BottomNav
-            activeTab={activeTab as NavTab}
-            onTabChange={(tab) => setActiveTab(tab)}
-          />
-        </AppLayout>
-      )}
+        {/* 4-Icon Bottom Navigation */}
+        <BottomNav
+          activeTab={activeTab as NavTab}
+          onTabChange={(tab) => setActiveTab(tab)}
+        />
+      </AppLayout>
 
       {/* Slide-out Shastra Lens Drawer */}
       <ShastraLensDrawer
@@ -230,7 +204,6 @@ function MainContent() {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        onOpenDevHarness={() => setActiveTab('harness')}
       />
     </div>
   );

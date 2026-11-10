@@ -16,9 +16,9 @@ interface FeatureItem {
 const features: FeatureItem[] = [
   {
     id: 1,
-    title: 'Katha Upanishad Chariot',
+    title: 'Katha Upanishad Chariot & Dynamic Composure',
     paragraph:
-      'Right at the top of your home screen sits the living mirror of your mind. Ancient wisdom compares your body to a chariot, your senses to the horses, your mind to the reins, and your higher intellect to the charioteer. You do not need to press anything here—as you log your daily sleep, food, focus, and emotions across the app, the chariot automatically shifts between Resting, Calm, Brisk, and Galloping, gently showing you whether you are holding the reins of your day or being pulled along by restless impulses.',
+      'Right at the top of your home screen sits the living mirror of your mind (Katha Upanishad 1.3.3–4). Your body is the chariot, senses the horses, mind the reins, and intellect the charioteer. As you log your day, the chariot shifts live across Resting, Calm, Brisk, and Galloping. Composure adapts dynamically: on Standby (0 urges logged today) it weighs your biological foundation (65%) and emotional conditioning (35%); when impulses are active, it recalibrates to Sadhana (50%), Interceptor (25%), and Bhāva (25%).',
   },
   {
     id: 2,
@@ -40,15 +40,15 @@ const features: FeatureItem[] = [
   },
   {
     id: 5,
-    title: 'Personal Sankalpa Log',
+    title: 'Personal Sankalpa & Sacred Intention Space',
     paragraph:
-      'A ship without a compass drifts with every wind, and a seeker without an inner intention gets pulled by every distraction. Your Sankalpa is the personal vow you made to yourself when you first entered BrahmaPath, thoughtfully placed right on your home dashboard so it never gets buried. Whenever you feel overwhelmed or tempted to give up on your routine, reading your own words reminds you that you are walking this path out of self-respect, not self-punishment.',
+      'A ship without a compass drifts with every wind. Your Foundational Sankalpa card rests directly above the daily Bhagavad Gita shloka on your dashboard. Tapping it opens the Sacred Intention Space, where you set Immediate Daily Intentions alongside one-pointed Horizon Goals (Vyavasāyātmikā Buddhi, BG 2.41)—anchoring your routine in personal self-respect (BG 6.5) rather than self-punishment.',
   },
   {
     id: 6,
-    title: 'Daily Sadhana Hub',
+    title: 'Daily Sadhana Hub & 4-Zone Screen Baseline',
     paragraph:
-      'Think of this page as a gentle check-in with the three pillars that hold up your life: Āhāra (what your body and eyes consume), Nidrā (how deeply you rest), and Brahmacharya (how well you protect your focus and vital energy). Because your day unfolds in stages, you do not have to submit all three at once. When you wake up in the morning, simply adjust the Nidrā sleep inputs and tap the Nidrā log button—its grey status box will turn green, and your score will immediately update based only on your sleep. Later in the afternoon or evening, you can come back to log or update your Āhāra screen time and meals, and log your Brahmacharya study blocks before bed. Each pillar saves independently and can be updated as many times as you like throughout the day.',
+      'Grounded in Charaka Samhita 11.35 and Gita 6.17, daily vitality rests on three pillars totaling an absolute 100-point scale: Āhāra (food & screen diet — 34 pts), Nidrā (restorative sleep — 33 pts), and Brahmacharya / Vīrya (focus & energy — 33 pts). Each logs independently with additive scoring. A Self-Anchored 4-Zone Relative Screen Baseline (0 to Baseline + 4h) measures progress against your own average, while Stage 2 introduces Jaṭharāgni ration checks, split-sentry sleep recovery, and Ojas coping reserves for frontline posting terrain.',
   },
   {
     id: 7,
@@ -58,15 +58,15 @@ const features: FeatureItem[] = [
   },
   {
     id: 8,
-    title: 'Impulse Interceptor',
+    title: 'Impulse Interceptor & 48 Micro-Swaps',
     paragraph:
-      'Whenever a heavy urge pulls at you—whether it is doomscrolling, restlessness, or sudden lethargy—open this tool before acting on the impulse. Start by tapping the trigger you are feeling and sliding the Urge Intensity bar from 1 to 5. Watch how the 7-step Bhagavad Gita cascade below it highlights the exact stage your mind has reached, showing you how a tiny lingering thought grows into a strong craving. Next, scroll down to the two text boxes: in the first box (Vitarka), honestly name the excuse your mind is telling you; in the second box (Pratipaksha), write a calm, truthful counter-thought. Pick one physical micro-swap action from the 6 context-aware options dynamically curated for your active Life Rhythm or Posting Terrain—like splashing cold water or taking five slow breaths—and tap the main button to intercept the urge, or honestly log a slip without guilt if the urge already passed.',
+      'Whenever a restless urge strikes, open the Impulse Interceptor before acting. Adjusting Urge Intensity (1 to 5) lights up the 7-stage downward cascade (Dhyāyato → Buddhi-nāśa, BG 2.62–63), exposing how subtle brooding turns into compulsion. Select your trigger to load 1-tap Vitarka → Pratipaksha reframes (YS 2.33) and choose from 8 detailed Shreyas Micro-Swaps automatically curated for your active rhythm or terrain (48 total). In Stage 2, sentinels can activate a 10-Minute Vāṅ-maya Tapas Speech Shield (BG 17.15) to cool frustration before calling home.',
   },
   {
     id: 9,
-    title: 'Bhāva Compass',
+    title: 'Bhāva Compass & Sahyogi Battle-Buddy Kits',
     paragraph:
-      'Everyday life is full of quiet emotional friction—comparing yourself to others, doubting your own worth, feeling unseen or lonely, or dealing with difficult personal or work dynamics. When you open the Bhāva Compass, you will see eight expandable cards: three Positive Buffer cards at the top and five Negative Friction cards below. Whenever you experience a moment of shared joy or resilience, open a green Positive Buffer card and log it to build emotional strength. Whenever envy, self-doubt, or hostility hits you, open the matching Negative Friction card; you can mark that you are experiencing that friction right now, read the comforting explanation, practice the simple step-by-step antidotes rooted in Patanjali\'s Yoga Sutras, and then tap Mark as Resolved to clear the heaviness from your mind.',
+      'Emotional serenity is restored through Patanjali Yoga Sutra 1.33 (Chitta Prasādanam): Maitrī, Karuṇā, Muditā, and Upekṣā. Starting from a neutral baseline of 50, logging Positive Buffers adds +10 pts, unaddressed frictions subtract -12 pts, and practicing the 3-step grounding antidotes rewards +4 pts upon resolution. In Stage 2, sentinels receive a 2-Sentence Homefront Reassurance Script for leave-delay guilt (BG 2.14), Pre-Call De-Armoring (BG 12.13), and a direct Tele-MANAS (14416) clinical safeguard.',
   },
   {
     id: 10,
@@ -76,9 +76,9 @@ const features: FeatureItem[] = [
   },
   {
     id: 11,
-    title: 'Vault & Trajectory Analytics',
+    title: 'Offline Vault & -5% Momentum Engine',
     paragraph:
-      'Your Vault is where your daily efforts come together into a clear 8-day story. The trajectory graph and progression tables show your daily equilibrium alongside your raw sleep hours, focus blocks, and screen time. If you miss a day completely, the graph applies a gentle 5% natural decay—not to punish you, but to honestly reflect how the mind naturally drifts when left unattended. Most importantly, everything in this Vault is 100% private and stored strictly on your own device, working completely offline with zero cloud servers ever touching your personal journey.',
+      'Your Vault gathers your practice into an 8-day story with 3 historical ledgers. Instead of punitive binary streak counters that reset your score to 0 after a single missed day, BrahmaPath applies a compassionate -5% natural Tamasic momentum drift, preserving 95% of your progress. All data remains 100% offline on your device, supported by 7 native scheduled notification anchors. To preserve historical ledger integrity, switching between Civilian and Defense paths requires a clean Factory Reset in Settings.',
   },
   {
     id: 12,
@@ -89,8 +89,8 @@ const features: FeatureItem[] = [
 ];
 
 /**
- * AboutPage: A sequential, plain-language walkthrough of all 12 BrahmaPath features
- * and how they harmonize together for daily equilibrium.
+ * AboutPage: Sequential walkthrough of all 12 BrahmaPath features
+ * with the Core Purpose & Dual-Stage Architecture Card at the top.
  */
 export const AboutPage: React.FC<AboutPageProps> = ({ className = '', onBack }) => {
   const { setActiveView } = useBrahmaPath();
@@ -152,12 +152,71 @@ export const AboutPage: React.FC<AboutPageProps> = ({ className = '', onBack }) 
             </h2>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            A sequential walkthrough of your 12 inner equilibrium tools
+            Purpose, dual-stage architecture &amp; all 12 inner equilibrium tools
           </p>
         </div>
 
-        {/* 12 Sequential Accordion Items */}
+        {/* =========================================================================
+            PURPOSE OF BRAHMAPATH & DUAL-STAGE ARCHITECTURE CARD
+            ========================================================================= */}
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-3.5">
+          {/* Top Badge & Heading Row */}
+          <div>
+            <span className="bg-emerald-50 text-[#065F46] border border-emerald-200 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider inline-block">
+              OUR PURPOSE • ONE TIMELESS PHILOSOPHY, TWO ARENAS OF LIFE
+            </span>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-2">
+              Why BrahmaPath Exists &amp; How It Adapts to Your World
+            </h3>
+          </div>
+
+          {/* Core Purpose Paragraph */}
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            BrahmaPath solves a fundamental flaw in modern wellness apps: rigid blockers and streak resets punish human bad days, while passive quotes offer no real habit change. Rooted in the timeless psychology of the Bhagavad Gita, Katha Upanishad, Charaka Samhita, and Yoga Sutras, BrahmaPath is a non-judgmental, 100% offline companion that helps you steady the reins of your mind, honor your body's recovery, and build lasting inner peace.
+          </p>
+
+          {/* Stacked Vertical Stage Boxes (One on top of each other) */}
+          <div className="space-y-3 pt-1">
+            {/* Box 1 — Stage 1: The Inner Battleground */}
+            <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/80 space-y-1.5">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#065F46] block">
+                1. The Inner Battleground (Everyday Life)
+              </span>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                For calmer focus, emotional balance, and freedom from digital noise. The Current Life Rhythm bar at the top adapts your prompts and resets across three rhythms: <strong>Learning &amp; Study</strong>, <strong>Work &amp; Enterprise</strong>, and <strong>Home &amp; Quiet Living</strong>.
+              </p>
+            </div>
+
+            {/* Box 2 — Stage 2: The Frontline Battleground */}
+            <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-200/80 space-y-1.5">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#D97706] block">
+                2. The Frontline Battleground (Defense Service)
+              </span>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                A warm Battle-Buddy (Sahyogi) for uniformed personnel under high operational stress. The Current Posting Terrain selector adapts to <strong>High-Altitude / Cold</strong>, <strong>Active Border / Pickets</strong>, and <strong>Cantonment / Peace</strong>—supporting split-watch sleep recovery, ration balance, and warm connection with family back home.
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom Note */}
+          <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200/70 text-[11px] text-slate-500 leading-relaxed">
+            <strong className="text-slate-700">Unified Under the Hood:</strong> Both paths feed into a unified Chariot Composure engine that dynamically weighs your biological foundation (Yukta), impulse restraint (Interceptor), and emotional conditioning (Bhāva)—rewarding honest effort without punishing missed days.
+          </div>
+        </div>
+
+        {/* =========================================================================
+            ALL 12 SEQUENTIAL ACCORDION CARDS
+            ========================================================================= */}
         <div className="space-y-3">
+          <div className="px-1 flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+              The 12 Inner Equilibrium Tools
+            </span>
+            <span className="text-[11px] text-slate-400 font-medium">
+              Tap to expand
+            </span>
+          </div>
+
           {features.map((item) => {
             const isExpanded = expandedId === item.id;
 
@@ -199,7 +258,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ className = '', onBack }) 
                   />
                 </button>
 
-                {/* Accordion Body with Smooth Max-Height Animation */}
+                {/* Accordion Body with Smooth Animation */}
                 <div
                   className={`transition-all duration-500 ease-in-out overflow-hidden ${
                     isExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
@@ -216,9 +275,11 @@ export const AboutPage: React.FC<AboutPageProps> = ({ className = '', onBack }) 
           })}
         </div>
 
-        {/* STEP 2: Static Developer Note (Niṣkāma Bhāva) & Bottom Branding */}
+        {/* =========================================================================
+            DEVELOPER INTENTION (NIṢKĀMA BHĀVA) & BOTTOM BRANDING
+            ========================================================================= */}
         <div className="pt-6 border-t border-slate-200/90 space-y-4">
-          {/* Static Developer Intention Box (Always Visible) */}
+          {/* Static Developer Intention Box */}
           <div className="p-5 sm:p-6 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-2.5 shadow-2xs">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-900 block">
@@ -226,7 +287,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ className = '', onBack }) 
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-              This application was crafted with <span className="font-semibold text-slate-900">Niṣkāma Bhāva</span>—free from commercial greed, advertisements, subscriptions, or the worldly chase for money and user data. We do not track you, we do not ask for your personal data, and no external server ever watches what you write here. BrahmaPath exists for one quiet reason: to bring the timeless, life-steadying wisdom of our ancient scriptures—which many have forgotten in the noise of the modern world—back into your daily hands as a practical, compassionate companion.
+              This application was crafted with <span className="font-semibold text-slate-900">Niṣkāma Bhāva</span>—free from commercial greed, advertisements, subscriptions, or the worldly chase for money and user data. We do not track you, we do not ask for your personal data, and no external server ever watches what you write here. BrahmaPath exists for one quiet reason: to bring the timeless, life-steadying wisdom of our classical heritage back into your daily hands as a practical, compassionate companion.
             </p>
           </div>
 

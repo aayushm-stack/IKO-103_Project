@@ -140,13 +140,13 @@ BrahmaPath runs as a native Android application powered by Capacitor, optimized 
 | Version | Status | Location | Target Theater & Description |
 | :--- | :--- | :--- | :--- |
 | **Version 1.0** | Available (Committed) | [`apk/BrahmaPath-v1.0.apk`](./apk/BrahmaPath-v1.0.apk) | **Civilian Prototype Build**: Covers foundational Stage 1 civilian life rhythms, core sādhanā tracking, and initial Chariot composure algorithms. |
-| **Version 2.0** | Production Release (Upcoming) | `apk/BrahmaPath-v2.0.apk` | **Full Production Two-Stage Multi-Cohort Build**: Complete integration of Defense theaters (Glacier, Desert, CI Ops), 48 Śreyas micro-swaps, split-sentry circadian models, offline local notification scheduler, and Sahyogi crisis routing. *(Will be built into the `apk/` folder without overwriting v1.0)*. |
+| **Version 2.0** | Available (Committed) | [`apk/BrahmaPath-v2.0.apk`](./apk/BrahmaPath-v2.0.apk) | **Full Production Two-Stage Release**: Complete integration of Defense theaters (High Altitude, Active Border, Cantonment), 48 Śreyas micro-swaps, split-sentry circadian models, offline local notification scheduler, and Sahyogi crisis routing. *(Committed alongside Version 1.0)*. |
 
 ### Step-by-Step Installation on Android
 
 1. **Locate or Download the APK**:
    * Navigate to the [`apk/`](./apk) directory in this repository.
-   * Transfer `BrahmaPath-v1.0.apk` (or `BrahmaPath-v2.0.apk` once compiled) to your Android device via USB, direct download, or local file transfer.
+   * Transfer [`apk/BrahmaPath-v2.0.apk`](./apk/BrahmaPath-v2.0.apk) (recommended latest release) or [`apk/BrahmaPath-v1.0.apk`](./apk/BrahmaPath-v1.0.apk) (legacy v1) to your Android device via USB, direct download, or local file transfer.
 2. **Enable Unknown Apps Installation**:
    * On your Android phone, go to **Settings** $\rightarrow$ **Security & Privacy** $\rightarrow$ **Install Unknown Apps** (or **Special App Access**).
    * Grant permission to your File Manager or Browser to install packages.

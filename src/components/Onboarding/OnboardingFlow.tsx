@@ -761,7 +761,54 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
           )}
         </div>
 
-        {/* Box 3 — The Sentinel's Sankalpa (Warrior's Inner Pledge) */}
+        {/* Box 3 — Deployment Posting Terrain Selection */}
+        <div className="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-3">
+          <div>
+            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+              Choose Your Deployment Posting Terrain
+            </span>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Tailors your daily field prompts, sentinel triggers, and coping reserve to operational terrain.
+            </p>
+          </div>
+
+          <div className="space-y-2.5">
+            {DEPLOYMENT_ENVIRONMENTS.map((env) => {
+              const isSelected = selectedEnv === env.id;
+              return (
+                <button
+                  key={env.id}
+                  type="button"
+                  onClick={() => handleEnvSelect(env.id)}
+                  className={`w-full text-left p-3.5 rounded-xl border transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-emerald-50/80 border-emerald-700/80 text-slate-900 shadow-2xs'
+                      : 'bg-white border-slate-200/90 text-slate-700 hover:bg-slate-50/90'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-slate-900">{env.label}</span>
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                        isSelected ? 'border-emerald-700 bg-white' : 'border-slate-300 bg-white'
+                      }`}
+                    >
+                      {isSelected && <span className="w-2 h-2 rounded-full bg-emerald-700" />}
+                    </div>
+                  </div>
+                  <span className="text-[10.5px] font-semibold text-[#D97706] mt-0.5 block">
+                    {env.badge}
+                  </span>
+                  <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                    {env.summary}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Box 4 — The Sentinel's Sankalpa (Warrior's Inner Pledge) */}
         <div className="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-3">
           <div>
             <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
