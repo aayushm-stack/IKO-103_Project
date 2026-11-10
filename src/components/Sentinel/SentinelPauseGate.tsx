@@ -3,14 +3,23 @@ import { ShastraLensButton } from '../Shastra/ShastraLensButton';
 import { useBrahmaPath } from '../../context/BrahmaPathContext';
 import { estimateCascadeStage } from '../../engine/cascadeEngine';
 import { getPRQBreakdown, isInterceptionSuccessful } from '../../engine/interceptorEngine';
-import { TriggerCategory } from '../../types/iks';
 import { SpeechRestraintProtocol } from '../../types/trayopastambha';
 import { CascadeVisualizer } from '../Features/CascadeVisualizer';
+import { PostingEnvironmentBar } from './PostingEnvironmentBar';
+import {
+  SENTINEL_INTERCEPTOR_TRIGGERS,
+  PAUSE_GATE_FIELD_TRIGGERS,
+  TERRAIN_MICRO_SWAPS,
+  PauseGateFieldTrigger,
+  FieldReframePair,
+  DetailedMicroSwap,
+} from '../../data/sentinelShastraData';
+import { useEffect } from 'react';
+import { DeploymentEnvironment } from '../../types/shastra';
 import {
   ShieldCheck,
   CheckCircle2,
   AlertTriangle,
-  RotateCcw,
   Sparkles,
   Zap,
   VolumeX,
@@ -24,52 +33,6 @@ export interface SentinelPauseGateProps {
   className?: string;
 }
 
-interface SentinelTriggerOption {
-  id: string;
-  label: string;
-  category: TriggerCategory;
-  icon: string;
-  subtext: string;
-}
-
-const SENTINEL_TRIGGERS: SentinelTriggerOption[] = [
-  {
-    id: 'command_friction',
-    label: 'Command / Hierarchy Friction',
-    category: 'Social Comparison',
-    icon: '⚡',
-    subtext: 'Swallowed anger from harsh orders, rank tension, or chain-of-command friction',
-  },
-  {
-    id: 'homefront_worry',
-    label: 'Homefront Worry & Leave Stress',
-    category: 'Academic Anxiety / Professional Workload',
-    icon: '🏡',
-    subtext: 'Distance anxiety, delayed leave, family emergency, or helplessness from afar',
-  },
-  {
-    id: 'post_watch_vigilance',
-    label: 'Post-Watch Hyper-Vigilance',
-    category: 'Cheap Dopamine / Junk Stimulation',
-    icon: '👁️',
-    subtext: 'Adrenaline spike after duty, persistent threat-scanning, unable to down-shift nervous system',
-  },
-  {
-    id: 'barracks_boredom',
-    label: 'Barracks Boredom & Digital Drift',
-    category: 'Doomscrolling',
-    icon: '📱',
-    subtext: 'Compulsive reel scrolling, digital escapism, bunk isolation during downtime',
-  },
-  {
-    id: 'deployment_fatigue',
-    label: 'Deployment Fatigue & Numbing',
-    category: 'Lethargy',
-    icon: '🛡️',
-    subtext: 'Emotional numbness, field burnout, cynicism, or checking out of awareness',
-  },
-];
-
 interface IntensityMetadata {
   title: string;
   desc: string;
@@ -78,143 +41,75 @@ interface IntensityMetadata {
 
 const INTENSITY_METADATA: Record<number, IntensityMetadata> = {
   1: {
-    title: 'Subtle Distraction',
-    desc: 'Fleeting sensory spark or momentary irritation. Early interruptible.',
-    badge: '✓ Early Intercept',
+    title: 'Subtle Sensory Spark',
+    desc: 'Fleeting irritation or passing urge. Easily interruptible.',
+    badge: 'Early Intercept',
   },
   2: {
     title: 'Building Tension',
     desc: 'Mind circling the friction; emotional affinity forming.',
-    badge: '✓ Early Intercept',
+    badge: 'Early Intercept',
   },
   3: {
-    title: 'Visceral Flash',
-    desc: 'Acute urge peak or adrenaline surge. Compulsion seeking expression.',
-    badge: '⚡ Peak Urge',
+    title: 'Visceral Heat Flash',
+    desc: 'Acute urge peak or adrenaline surge. Compulsion seeking discharge.',
+    badge: 'Peak Urge',
   },
   4: {
-    title: 'Heavy Pressure',
-    desc: 'Swallowed krodha or intense craving demanding immediate discharge.',
-    badge: '⚠️ Critical Stage',
+    title: 'Swallowed Anger / Pressure',
+    desc: 'Swallowed krodha demanding immediate verbal or physical release.',
+    badge: 'Critical Stage',
   },
   5: {
-    title: 'Total Hijack Imminent',
+    title: 'Total Cognitive Hijack',
     desc: 'Discriminative intellect (Buddhi) collapsing; blind impulse imminent.',
-    badge: '🚨 Critical Stage',
+    badge: 'Urgent Intercept',
   },
 };
-
-const QUICK_FILL_REFRAMES = [
-  {
-    id: 'bg_2_56',
-    ref: 'BG 2.56 • Sthitaprajña',
-    text: 'Unshaken by adversity, free from craving in pleasure, detached from rage and fear.',
-  },
-  {
-    id: 'bg_2_14',
-    ref: 'BG 2.14 • Titikṣā',
-    text: 'These sensations of heat, cold, praise, and blame are fleeting contact of the senses. Endure them.',
-  },
-  {
-    id: 'bg_6_26',
-    ref: 'BG 6.26 • Chariot Hold',
-    text: 'From wherever the restless and unsteady mind wanders, rein it back under the control of the Self.',
-  },
-];
 
 interface SpeechProtocolOption {
   id: SpeechRestraintProtocol;
   label: string;
   badge: string;
-  shastraRef: string;
-  description: string;
+  desc: string;
   icon: typeof VolumeX;
 }
 
 const SPEECH_PROTOCOLS: SpeechProtocolOption[] = [
   {
     id: 'mauna_hold_10m',
-    label: 'Hold Fire (10-Min Mauna Silence Before Replying)',
-    badge: '🛡️ Hold Fire',
-    shastraRef: 'BG 17.15 Mauna',
-    description: 'Commit to 10 minutes of complete silence before responding to provocation or sending messages.',
+    label: 'Hold Phone & Tongue for 10 Mins (Do not reply while blood is hot)',
+    badge: 'BG 17.15 Mauna',
+    desc: 'Commit to 10 minutes of complete radio/verbal silence before sending messages or reacting to provocation.',
     icon: VolumeX,
   },
   {
     id: 'suhrda_measured_speech',
-    label: 'Suhṛda Speech (Speak Calmly Without Heat or Blame)',
-    badge: '🗣️ Suhṛda Speech',
-    shastraRef: 'BG 17.15 Anudvegakara',
-    description: 'Speak words that cause no agitation, truthful, pleasant, and beneficial without sarcasm or rage.',
+    label: 'Use the 2-Line Warmth Anchor (Speak softly without blame)',
+    badge: 'BG 17.15 Anudvegam',
+    desc: 'Speak only essential, calm words that cause no agitation—gentle, truthful, and supportive.',
     icon: MessageSquare,
   },
   {
     id: 'sahyog_buddy_debrief',
-    label: 'Sahyog Reset (Step Aside & Debrief with Unit Buddy)',
-    badge: '🤝 Sahyog Reset',
-    shastraRef: 'BG 17.15 Hita-Bhashana',
-    description: 'Step away from the friction zone and de-escalate through a grounded conversation with your unit buddy.',
+    label: 'Step Aside with Unit Buddy for 5 Mins',
+    badge: 'BG 17.15 Sahyog',
+    desc: 'De-escalate autonomic heat through quiet, grounded contact with a trusted unit buddy.',
     icon: Users,
   },
 ];
 
-interface BarracksMicroSwap {
-  id: string;
-  title: string;
-  sanskrit: string;
-  duration: string;
-  desc: string;
-}
-
-const BARRACKS_MICRO_SWAPS: BarracksMicroSwap[] = [
-  {
-    id: 'extended_exhale',
-    title: 'Extended Exhale (4s In, 8s Out)',
-    sanskrit: 'Prāṇāyāma Langhana',
-    duration: '2 Mins',
-    desc: 'Down-shifts autonomic nervous system and cools internal adrenaline spikes.',
-  },
-  {
-    id: 'kurma_palming',
-    title: 'Kūrma Eye-Palming (60s Pitch Dark)',
-    sanskrit: 'Kūrma Pratyāhāra',
-    duration: '1 Min',
-    desc: 'Rests overstimulated optic nerves and resets sensory perception after duty.',
-  },
-  {
-    id: 'jala_reset',
-    title: 'Jala Cold Water Face Reset',
-    sanskrit: 'Jala Śamana',
-    duration: '90 Secs',
-    desc: 'Triggers the mammalian dive reflex to immediately decelerate heart rate.',
-  },
-  {
-    id: 'tactical_grounding',
-    title: '5-4-3-2-1 Tactical Grounding',
-    sanskrit: 'Pañca Indriya Dhāraṇā',
-    duration: '2 Mins',
-    desc: '5 sight, 4 touch, 3 sound, 2 scent, 1 breath to ground wandering consciousness.',
-  },
-  {
-    id: 'shoulder_neck_release',
-    title: 'Post-Watch Shoulder & Neck Release',
-    sanskrit: 'Kāya Śithilīkaraṇa',
-    duration: '3 Mins',
-    desc: 'Releases somatic armoring in trapezius, jaw, and neck from heavy kit and vigilance.',
-  },
-  {
-    id: 'lock_phone_kitbag',
-    title: 'Lock Phone in Kitbag / Locker',
-    sanskrit: 'Viṣaya Tyāga',
-    duration: 'Immediate',
-    desc: 'Enforces tactical separation from screens and notifications in barracks bunks.',
-  },
-];
+const TERRAIN_LABELS: Record<DeploymentEnvironment, string> = {
+  high_altitude: 'High-Altitude & Cold Post',
+  active_border: 'Active Border & Picket Grid',
+  cantonment: 'Cantonment & Peace Station',
+};
 
 /**
- * Mobile-first Sentinel Impulse & Krodha Pause Gate.
- * Rooted in Bhagavad Gita 2.62-63 & 17.15 (Vāṅ-maya Tapas).
- * Serves defense personnel with operational triggers, speech de-escalation, and micro-swaps.
+ * Mobile-first Sentinel Tactical Impulse & Krodha Interceptor.
+ * Rooted in Bhagavad Gita 2.62–63 & 17.15 (Vāṅ-maya Tapas).
+ * Provides defense personnel with field triggers, 1-tap Battle-Buddy reframes,
+ * speech restraint protocols, and terrain-smart micro-swaps.
  */
 export const SentinelPauseGate: React.FC<SentinelPauseGateProps> = ({ className = '' }) => {
   const {
@@ -223,14 +118,39 @@ export const SentinelPauseGate: React.FC<SentinelPauseGateProps> = ({ className 
     openShastraLens,
     resolveInterceptionById,
     toggleInterceptionResolution,
+    preferences,
   } = useBrahmaPath();
 
+  const env: DeploymentEnvironment = preferences?.deploymentEnvironment ?? 'active_border';
+  const triggers = SENTINEL_INTERCEPTOR_TRIGGERS[env] ?? PAUSE_GATE_FIELD_TRIGGERS;
+  const swaps = TERRAIN_MICRO_SWAPS[env] ?? TERRAIN_MICRO_SWAPS.active_border;
+
   // Component State
-  const [selectedTrigger, setSelectedTrigger] = useState<SentinelTriggerOption | null>(null);
+  const [selectedTrigger, setSelectedTrigger] = useState<PauseGateFieldTrigger>(
+    triggers[0]
+  );
   const [urgeIntensity, setUrgeIntensity] = useState<number>(3);
-  const [vitarkaText, setVitarkaText] = useState<string>('');
-  const [pratipakshaText, setPratipakshaText] = useState<string>('');
-  const [selectedProtocol, setSelectedProtocol] = useState<SpeechRestraintProtocol>('mauna_hold_10m');
+  const [vitarkaText, setVitarkaText] = useState<string>(
+    triggers[0]?.pairs[0]?.vitarka ?? ''
+  );
+  const [pratipakshaText, setPratipakshaText] = useState<string>(
+    triggers[0]?.pairs[0]?.pratipaksha ?? ''
+  );
+
+  // When posting environment changes, automatically select the first trigger of that terrain
+  useEffect(() => {
+    if (triggers && triggers.length > 0) {
+      setSelectedTrigger(triggers[0]);
+      if (triggers[0].pairs && triggers[0].pairs.length > 0) {
+        setVitarkaText(triggers[0].pairs[0].vitarka);
+        setPratipakshaText(triggers[0].pairs[0].pratipaksha);
+      }
+      setSelectedSwap('');
+      if (gateFeedback?.isError) setGateFeedback(null);
+    }
+  }, [env]);
+  const [selectedProtocol, setSelectedProtocol] =
+    useState<SpeechRestraintProtocol>('mauna_hold_10m');
   const [selectedSwap, setSelectedSwap] = useState<string>('');
   const [gateFeedback, setGateFeedback] = useState<{
     text: string;
@@ -269,21 +189,31 @@ export const SentinelPauseGate: React.FC<SentinelPauseGateProps> = ({ className 
     [todayInterceptions]
   );
 
-  // Toggle trigger selection
-  const handleTriggerSelect = (option: SentinelTriggerOption) => {
-    setSelectedTrigger((prev) => (prev?.id === option.id ? null : option));
+  const currentStageInfo = useMemo(() => {
+    return estimateCascadeStage(selectedTrigger.category, urgeIntensity);
+  }, [selectedTrigger.category, urgeIntensity]);
+
+  // Select trigger pill
+  const handleTriggerSelect = (trigger: PauseGateFieldTrigger) => {
+    setSelectedTrigger(trigger);
+    // Pre-populate with first reframe pair of the newly selected trigger
+    if (trigger.pairs && trigger.pairs.length > 0) {
+      setVitarkaText(trigger.pairs[0].vitarka);
+      setPratipakshaText(trigger.pairs[0].pratipaksha);
+    }
+    if (gateFeedback?.isError) setGateFeedback(null);
+  };
+
+  // 1-Tap Battle-Buddy quick-fill
+  const handleSelectReframePair = (pair: FieldReframePair) => {
+    setVitarkaText(pair.vitarka);
+    setPratipakshaText(pair.pratipaksha);
     if (gateFeedback?.isError) setGateFeedback(null);
   };
 
   // Toggle micro-swap selection
   const handleSwapSelect = (title: string) => {
     setSelectedSwap((prev) => (prev === title ? '' : title));
-  };
-
-  // Quick-fill reframe
-  const handleQuickFill = (text: string) => {
-    setPratipakshaText(text);
-    if (gateFeedback?.isError) setGateFeedback(null);
   };
 
   // Toggle slip/resolution in history list
@@ -301,32 +231,18 @@ export const SentinelPauseGate: React.FC<SentinelPauseGateProps> = ({ className 
       });
     } else {
       setGateFeedback({
-        text: 'Recorded as mindful observation (Svādhyāya). Tap "Resolve" anytime to restore composure.',
+        text: 'Recorded as mindful slip (Svādhyāya). Tap "Resolve" anytime to restore composure.',
         isError: false,
         isAmber: true,
       });
     }
   };
 
-  // Estimated stage for current selection
-  const currentStageInfo = useMemo(() => {
-    const category = selectedTrigger?.category ?? 'Social Comparison';
-    return estimateCascadeStage(category, urgeIntensity);
-  }, [selectedTrigger, urgeIntensity]);
-
-  // Step 1 to 7 for visualizer
-  const cascadeStep = useMemo(() => {
-    if (selectedTrigger) {
-      return currentStageInfo.stepNumber || 3;
-    }
-    return urgeIntensity <= 1 ? 1 : urgeIntensity === 2 ? 2 : urgeIntensity === 3 ? 3 : urgeIntensity === 4 ? 5 : 7;
-  }, [selectedTrigger, currentStageInfo, urgeIntensity]);
-
-  // --- SUBMISSION HANDLER 1: PRIMARY INTERCEPTION ---
+  // 1. Submit Successful Pratipaksha Interception
   const handleCommitInterception = () => {
     if (!selectedTrigger) {
       setGateFeedback({
-        text: 'Please select an active frontline trigger above before engaging the pause gate.',
+        text: 'Please select what triggered your mind above before logging.',
         isError: true,
       });
       return;
@@ -335,205 +251,195 @@ export const SentinelPauseGate: React.FC<SentinelPauseGateProps> = ({ className 
     const trimmedVitarka = vitarkaText.trim();
     const trimmedPratipaksha = pratipakshaText.trim();
 
-    if (trimmedVitarka.length < 5) {
+    if (trimmedVitarka.length === 0) {
       setGateFeedback({
-        text: 'Please write down the compulsive impulse (Vitarka) with at least 5 characters before logging your interception.',
+        text: 'Please write down or tap a raw thought (Vitarka) before logging your interception.',
         isError: true,
       });
       return;
     }
 
-    if (trimmedPratipaksha.length < 8) {
+    if (trimmedPratipaksha.length === 0) {
       setGateFeedback({
-        text: 'Please formulate a conscious opposing reframe (Pratipaksha) with at least 8 characters or select a Quick-Fill reframe below.',
+        text: 'Please formulate or tap your Battle-Buddy reframe (Pratipaksha) to redirect your attention.',
         isError: true,
       });
       return;
     }
-
-    const selectedProtocolObj = SPEECH_PROTOCOLS.find((p) => p.id === selectedProtocol);
-    const protocolSuffix = selectedProtocolObj ? ` [Protocol: ${selectedProtocolObj.label}]` : '';
-    const finalPratipaksha = `${trimmedPratipaksha}${protocolSuffix}`;
-    const microSwapVal = selectedSwap || 'Extended Exhale (4s In, 8s Out)';
 
     logInterception({
       triggerCategory: selectedTrigger.category,
       cascadeStageReached: currentStageInfo.stage,
       urgeIntensity,
       vitarkaText: trimmedVitarka,
-      pratipakshaText: finalPratipaksha,
-      selectedMicroSwap: microSwapVal,
-      microSwapAction: microSwapVal,
+      pratipakshaText: trimmedPratipaksha,
+      selectedMicroSwap: selectedSwap || swaps[0]?.title || 'Pranayama - Slow Nasal Extended Exhale',
+      microSwapAction: selectedSwap || swaps[0]?.title || 'Pranayama - Slow Nasal Extended Exhale',
       initialGuna: urgeIntensity >= 4 ? 'Tamas' : 'Rajas',
       resolvedGunaState: 'Sattva',
       interactionType: 'resolved_negative_friction',
       isResolved: true,
+      isSuccessful: true,
       isPositive: false,
     });
 
     setIsSuccessFeedback(true);
     setGateFeedback({
-      text: `🛡️ Pause Gate Engaged! Impulse intercepted at Step ${currentStageInfo.stepNumber} (${currentStageInfo.englishTitle}). Buddhi holds the reins of the Chariot.`,
+      text: 'Circuit-Breaker Engaged! Buddhi holds the reins. Composure logged successfully.',
       isError: false,
     });
 
     setTimeout(() => {
-      setVitarkaText('');
-      setPratipakshaText('');
-      setSelectedSwap('');
-      setUrgeIntensity(3);
-      setSelectedTrigger(null);
       setIsSuccessFeedback(false);
     }, 2800);
   };
 
-  // --- SUBMISSION HANDLER 2: SECONDARY MINDFUL SLIP ---
+  // 2. Submit Honest Slip (Svādhyāya)
   const handleLogSlip = () => {
     if (!selectedTrigger) {
       setGateFeedback({
-        text: 'Please select an active frontline trigger above before logging a slip.',
+        text: 'Please select what triggered your mind above before logging a slip.',
         isError: true,
       });
       return;
     }
 
-    const trimmedVitarka = vitarkaText.trim();
     const slipVitarka =
-      trimmedVitarka ||
-      `Yielded to ${selectedTrigger.label} impulse (Intensity ${urgeIntensity}/5)`;
-
-    const selectedProtocolObj = SPEECH_PROTOCOLS.find((p) => p.id === selectedProtocol);
-    const protocolSuffix = selectedProtocolObj ? `[Protocol: ${selectedProtocolObj.label}]` : '';
-    const microSwapVal = selectedSwap || 'None (Yielded to impulse)';
+      vitarkaText.trim() ||
+      `Reacted under ${selectedTrigger.label} (Intensity ${urgeIntensity}/5)`;
 
     logInterception({
       triggerCategory: selectedTrigger.category,
       cascadeStageReached: currentStageInfo.stage,
       urgeIntensity,
       vitarkaText: slipVitarka,
-      pratipakshaText: protocolSuffix,
-      selectedMicroSwap: microSwapVal,
+      pratipakshaText: '',
+      selectedMicroSwap: selectedSwap || 'None (Yielded in heat)',
+      microSwapAction: selectedSwap || 'None (Yielded in heat)',
       initialGuna: urgeIntensity >= 4 ? 'Tamas' : 'Rajas',
       resolvedGunaState: urgeIntensity >= 4 ? 'Tamas' : 'Rajas',
       interactionType: 'unresolved_negative_friction',
       isResolved: false,
+      isSuccessful: false,
       isPositive: false,
     });
 
     setGateFeedback({
-      text: '⚠️ Honest frontline observation recorded (Svādhyāya). Your Resilience Score reflects the event without judgment. Tap "Resolve" anytime in history below to reclaim composure.',
+      text: 'Honest observation logged (Svādhyāya). Zero shame—reclaim composure anytime by tapping "Resolve" below.',
       isError: false,
       isAmber: true,
     });
-
-    setVitarkaText('');
-    setPratipakshaText('');
-    setSelectedSwap('');
-    setUrgeIntensity(3);
-    setSelectedTrigger(null);
   };
 
   return (
     <div className={`w-full space-y-6 ${className}`}>
-      {/* 1. MASTER HEADER & TELEMETRY CARD */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-5">
+      {/* ================= TOP POSTING ENVIRONMENT SWITCHER ================= */}
+      <PostingEnvironmentBar />
+
+      {/* ================= MASTER IMPULSE INTERCEPTOR CARD ================= */}
+      <div
+        style={{
+          backgroundColor: '#FFFFFF',
+          borderColor: '#E2E8F0',
+        }}
+        className="rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs space-y-6"
+      >
         {/* Header Row */}
-        <div className="flex items-start justify-between border-b border-slate-200/90 pb-4 gap-3">
-          <div className="space-y-1">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100/90 text-amber-900 border border-amber-200/80">
-              <Zap className="w-3 h-3 text-amber-700" />
-              Bhagavad Gita 2.62–63 &amp; 17.15 • Tactical Circuit-Breaker
-            </span>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900">
-              Impulse &amp; Krodha Pause Gate
-            </h2>
+        <div className="flex items-center justify-between border-b border-slate-200/90 pb-4">
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-800 flex-shrink-0" />
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                Tactical Impulse &amp; Krodha Interceptor
+              </h2>
+            </div>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
-              Intercept swallowed command anger, homefront agitation, or late-night bunk urges before they hijack your Chariot.
+              Stop the &apos;last straw&apos; surge before heat turns into words or actions that hurt you, your unit, or your family.
             </p>
           </div>
           <ShastraLensButton
             onClick={() => openShastraLens('pratipaksha')}
-            className="flex-shrink-0 mt-1"
+            className="ml-2 flex-shrink-0"
           />
         </div>
 
-        {/* 3-Column Live PRQ Telemetry Strip */}
-        <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-3 grid grid-cols-3 gap-2 text-center text-xs shadow-2xs">
+        {/* 3-Column PRQ Telemetry Strip */}
+        <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3 grid grid-cols-3 gap-2 text-center text-xs shadow-2xs">
           <div className="space-y-0.5">
             <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
               PRQ Score
             </span>
-            <span className="font-extrabold text-slate-900 font-mono text-xs sm:text-sm">
-              {todayInterceptions.length === 0 ? '0/100' : `${prq.gateScore}/100`}
+            <span className="font-extrabold text-emerald-800 font-mono text-sm sm:text-base">
+              {prq.gateScore}%
             </span>
           </div>
-
           <div className="space-y-0.5 border-l border-slate-200/80 pl-2">
             <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
               Intercepted
             </span>
-            <span className="font-extrabold text-emerald-700 font-mono text-xs sm:text-sm">
+            <span className="font-extrabold text-slate-900 font-mono text-sm sm:text-base">
               {successfulCount}
             </span>
           </div>
-
           <div className="space-y-0.5 border-l border-slate-200/80 pl-2">
             <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
               Honest Slips
             </span>
-            <span className="font-extrabold text-amber-700 font-mono text-xs sm:text-sm">
+            <span className="font-extrabold text-amber-700 font-mono text-sm sm:text-base">
               {slipCount}
             </span>
           </div>
         </div>
 
-        {/* STEP 1: 5 Sentinel Trigger Categories */}
-        <div className="space-y-2.5 pt-1">
-          <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
-            Step 1 • Select Active Frontline Trigger:
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {SENTINEL_TRIGGERS.map((trigger) => {
+        {/* ================= STEP 1: WHAT JUST HIT YOUR MIND ================= */}
+        <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
+              Step 1 — What Just Hit Your Mind, Brother?
+            </h3>
+            <span className="text-[10px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+              Field Triggers
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Select the operational spark causing acute tension right now to unlock matching Battle-Buddy reframes:
+          </p>
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            {triggers.map((trigger) => {
               const isSelected = selectedTrigger?.id === trigger.id;
               return (
                 <button
                   key={trigger.id}
                   type="button"
                   onClick={() => handleTriggerSelect(trigger)}
-                  className={`p-3 rounded-2xl text-left border transition-all cursor-pointer flex items-start gap-2.5 ${
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold border transition text-left cursor-pointer flex items-center gap-2 select-none ${
                     isSelected
-                      ? 'bg-amber-500/15 border-amber-500 ring-2 ring-amber-500/30 text-amber-950 font-semibold'
-                      : 'bg-slate-50/80 border-slate-200/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-emerald-700 text-white border-emerald-800 shadow-xs ring-2 ring-emerald-700/20'
+                      : 'bg-white text-slate-700 border-slate-300 hover:border-slate-400 hover:bg-slate-50'
                   }`}
                 >
-                  <span className="text-base flex-shrink-0 mt-0.5">{trigger.icon}</span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-1">
-                      <span className="text-xs font-bold text-slate-900 leading-snug">
-                        {trigger.label}
-                      </span>
-                      {isSelected && (
-                        <Check className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-                      )}
-                    </div>
-                    <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
-                      {trigger.subtext}
-                    </p>
-                  </div>
+                  <span>{trigger.label}</span>
+                  {isSelected && <Check className="w-3.5 h-3.5 text-white flex-shrink-0" />}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* STEP 2: Urge Intensity Slider (1–5) & Cascade Visualizer */}
-        <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200/80 space-y-3">
-          <div className="flex justify-between items-center text-xs">
-            <span className="font-bold text-amber-950">
-              Step 2 • Urge Intensity ({urgeIntensity} / 5)
-            </span>
-            <span className="text-amber-800 font-semibold bg-amber-100/90 px-2.5 py-0.5 rounded-full text-[11px] border border-amber-200/80">
-              {INTENSITY_METADATA[urgeIntensity].badge}
+        {/* ================= STEP 2: AGITATION & HEAT METER ================= */}
+        <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
+                Step 2 — Agitation / Heat Meter (1 to 5)
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Rate the adrenaline surge or internal urge demanding expression:
+              </p>
+            </div>
+            <span className="text-xs font-extrabold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200 whitespace-nowrap ml-2">
+              Level {urgeIntensity} / 5
             </span>
           </div>
 
@@ -543,369 +449,340 @@ export const SentinelPauseGate: React.FC<SentinelPauseGateProps> = ({ className 
             max="5"
             step="1"
             value={urgeIntensity}
-            onChange={(e) => {
-              setUrgeIntensity(Number(e.target.value));
-              if (gateFeedback?.isError) setGateFeedback(null);
-            }}
-            className="w-full accent-[#D97706] cursor-pointer h-2 bg-amber-200/60 rounded-lg appearance-none"
+            onChange={(e) => setUrgeIntensity(Number(e.target.value))}
+            className="w-full accent-[#D97706] cursor-pointer"
           />
 
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs font-bold text-amber-950">
-              <span>{INTENSITY_METADATA[urgeIntensity].title}</span>
-              <span className="text-[11px] font-mono text-amber-900/80">
-                Step {currentStageInfo.stepNumber}: {currentStageInfo.englishTitle}
+          <div className="grid grid-cols-3 items-center text-[11px] px-0.5">
+            <span className="text-left text-slate-500 font-medium">1 (Subtle Spark)</span>
+            <div className="text-center">
+              <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/80 shadow-2xs inline-block">
+                {INTENSITY_METADATA[urgeIntensity].badge}
               </span>
             </div>
-            <p className="text-[11px] text-amber-900/80 leading-relaxed font-normal">
-              {INTENSITY_METADATA[urgeIntensity].desc}
+            <span className="text-right text-slate-700 font-semibold">5 (Total Hijack)</span>
+          </div>
+
+          {/* Live Stage Guidance */}
+          <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/80 text-xs text-amber-950 flex items-start gap-2">
+            <Zap className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" />
+            <p className="leading-relaxed font-medium">
+              Stage 3–4 (Krodha / Heat) is where we lock the brakes—before Stage 5 (Smṛti-Bhramśa) makes you say something you regret.
             </p>
           </div>
 
-          {/* Cascade Visualizer */}
-          <div className="pt-2 border-t border-amber-200/60">
-            <CascadeVisualizer
-              activeStep={cascadeStep}
-              showHeader={false}
-              {...({ intensity: urgeIntensity } as any)}
+          {/* 7-Step Cascade Visualization Engine */}
+          <CascadeVisualizer
+            activeStep={currentStageInfo.stepNumber}
+            showHeader={false}
+          />
+        </div>
+
+        {/* ================= STEP 3: INTERACTIVE BATTLE-BUDDY REFRAME ================= */}
+        <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
+                Step 3 — Interactive Battle-Buddy Reframe
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Vitarka (Raw Compulsive Surge) vs Pratipaksha (Sattvic Buddhi Counter-Voice)
+              </p>
+            </div>
+            <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+              YS 2.33
+            </span>
+          </div>
+
+          {/* Quick-Tap Battle-Buddy Cards for Selected Trigger */}
+          <div className="p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs space-y-2.5">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>Tap a matching thought below to auto-fill (or write your own):</span>
+            </div>
+
+            <div className="space-y-2.5 pt-1">
+              {(selectedTrigger?.pairs || []).map((pair, idx) => {
+                const isActive =
+                  vitarkaText === pair.vitarka && pratipakshaText === pair.pratipaksha;
+                return (
+                  <button
+                    key={pair.id || idx}
+                    type="button"
+                    onClick={() => handleSelectReframePair(pair)}
+                    className={`w-full p-3.5 rounded-xl border text-left transition cursor-pointer space-y-2 flex flex-col justify-between ${
+                      isActive
+                        ? 'bg-emerald-50/90 border-emerald-700 ring-2 ring-emerald-700/20 text-emerald-950 font-medium shadow-xs'
+                        : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200/90 text-slate-700'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500 pb-1">
+                        <span>Thought Option {idx + 1}</span>
+                        {isActive && (
+                          <span className="text-emerald-700 flex items-center gap-1 font-bold">
+                            <Check className="w-3.5 h-3.5" /> Selected
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-900 leading-relaxed font-medium">
+                        &ldquo;{pair.vitarka}&rdquo;
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-slate-200/70">
+                      <p className="text-[11px] text-emerald-800 leading-relaxed font-normal italic">
+                        → {pair.pratipaksha}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Textarea 1: Vitarka */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+              1. The Raw Knot Inside — Vitarka
+            </label>
+            <p className="text-[11px] text-slate-500">
+              What is your mind yelling right now? (harsh words, swallowed frustration, urgent craving)
+            </p>
+            <textarea
+              rows={2}
+              value={vitarkaText}
+              onChange={(e) => setVitarkaText(e.target.value)}
+              placeholder="e.g. My blood is boiling after that order and I feel like snapping..."
+              className="w-full p-3 border border-slate-300 rounded-xl bg-white text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 resize-none transition shadow-2xs leading-relaxed"
+            />
+          </div>
+
+          {/* Textarea 2: Pratipaksha */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+              2. Your Battle-Buddy Counter-Voice — Pratipaksha
+            </label>
+            <p className="text-[11px] text-slate-500">
+              What would a steady, senior comrade tell you right now? (BG 2.56 / BG 6.5)
+            </p>
+            <textarea
+              rows={2}
+              value={pratipakshaText}
+              onChange={(e) => setPratipakshaText(e.target.value)}
+              placeholder="e.g. Saluting the rank is discipline; letting harsh words live in my head tonight is optional..."
+              className="w-full p-3 border border-slate-300 rounded-xl bg-white text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 resize-none transition shadow-2xs leading-relaxed"
             />
           </div>
         </div>
-      </div>
 
-      {/* 2. STEP 3: VITARKA & PRATIPAKSHA BHĀVANĀ CARD */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-          <Compass className="w-4 h-4 text-emerald-800" />
-          <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
-            Step 3 • Vitarka &amp; Pratipaksha Bhāvanā (Tactical Reframe)
-          </h3>
-        </div>
+        {/* ================= STEP 4: 10-MIN VĀṄ-MAYA TAPAS SHIELD ================= */}
+        <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
+              Step 4 — The 10-Minute Vāṅ-maya Tapas Shield (BG 17.15 Speech Protocol)
+            </h3>
+            <span className="text-[10px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+              Discipline of Speech
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Before sending that voice note, making that call, or responding to provocation, anchor your speech:
+          </p>
 
-        {/* Vitarka Textarea */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-slate-800 block">
-            Vitarka • Unfiltered Thought / Spike (Swallowed Anger, Cynicism, Urge)
-          </label>
-          <textarea
-            rows={3}
-            value={vitarkaText}
-            onChange={(e) => {
-              setVitarkaText(e.target.value);
-              if (gateFeedback?.isError) setGateFeedback(null);
-            }}
-            placeholder="What intrusive thought, swallowed anger, or compulsive reaction is spiking right now? (e.g., 'I want to snap at command / check out completely')"
-            className="w-full p-3 text-xs sm:text-sm rounded-2xl bg-slate-50/80 border border-slate-200/80 focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition text-slate-800 placeholder-slate-400 resize-none"
-          />
-        </div>
-
-        {/* Pratipaksha Textarea */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-slate-800 block">
-            Pratipaksha • Tactical Reframe (Duty, Composure, Higher Purpose)
-          </label>
-          <textarea
-            rows={3}
-            value={pratipakshaText}
-            onChange={(e) => {
-              setPratipakshaText(e.target.value);
-              if (gateFeedback?.isError) setGateFeedback(null);
-            }}
-            placeholder="Reframe this impulse: What does duty (Dharma), honor, and higher purpose demand in this exact moment?"
-            className="w-full p-3 text-xs sm:text-sm rounded-2xl bg-slate-50/80 border border-slate-200/80 focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none transition text-slate-800 placeholder-slate-400 resize-none"
-          />
-        </div>
-
-        {/* 3 Quick-Fill Reframes */}
-        <div className="space-y-2 pt-1">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Quick-Fill Sentinel Reframes (Tap to Apply):
-          </span>
-          <div className="space-y-1.5">
-            {QUICK_FILL_REFRAMES.map((chip) => {
-              const isApplied = pratipakshaText.includes(chip.text);
+          <div className="space-y-2 pt-1">
+            {SPEECH_PROTOCOLS.map((protocol) => {
+              const isSelected = selectedProtocol === protocol.id;
+              const IconComp = protocol.icon;
               return (
                 <button
-                  key={chip.id}
+                  key={protocol.id}
                   type="button"
-                  onClick={() => handleQuickFill(chip.text)}
-                  className={`w-full text-left p-2.5 rounded-xl border text-xs transition cursor-pointer flex items-start gap-2 ${
-                    isApplied
-                      ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950 font-medium ring-1 ring-emerald-500/20'
-                      : 'bg-slate-50/70 border-slate-200/80 text-slate-700 hover:bg-amber-50/50 hover:border-amber-300'
+                  onClick={() => setSelectedProtocol(protocol.id)}
+                  className={`w-full p-3 rounded-xl border text-left transition cursor-pointer flex items-start justify-between gap-3 ${
+                    isSelected
+                      ? 'bg-emerald-50/90 border-emerald-700 ring-2 ring-emerald-700/20 text-emerald-950 font-semibold shadow-xs'
+                      : 'bg-white border-slate-200/90 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded-md flex-shrink-0 mt-0.5 border border-amber-200/60">
-                    {chip.ref}
-                  </span>
-                  <p className="min-w-0 flex-1 text-[11px] leading-relaxed italic">
-                    &ldquo;{chip.text}&rdquo;
-                  </p>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <IconComp className="w-4 h-4 text-emerald-700 flex-shrink-0" />
+                      <span className="text-xs font-bold text-slate-900">{protocol.label}</span>
+                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-md">
+                        {protocol.badge}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-normal leading-relaxed">
+                      {protocol.desc}
+                    </p>
+                  </div>
+                  {isSelected && (
+                    <Check className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
+                  )}
                 </button>
               );
             })}
           </div>
         </div>
-      </div>
 
-      {/* 3. STEP 4: VĀṄ-MAYA TAPAS (SPEECH PROTOCOL) CARD */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-          <VolumeX className="w-4 h-4 text-amber-700" />
-          <div className="min-w-0 flex-1">
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Step 4 • Vāṅ-maya Tapas (BG 17.15 Speech Protocol)
+        {/* ================= STEP 5: TERRAIN-SMART PHYSICAL RESETS ================= */}
+        <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-wide">
+              Step 5 — Terrain-Smart Physical Resets
             </h3>
-            <p className="text-[11px] text-slate-500">
-              Discipline of speech before reacting, messaging, or confronting in heat
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-2.5">
-          {SPEECH_PROTOCOLS.map((proto) => {
-            const isSelected = selectedProtocol === proto.id;
-            const Icon = proto.icon;
-            return (
-              <button
-                key={proto.id}
-                type="button"
-                onClick={() => setSelectedProtocol(proto.id)}
-                className={`p-3.5 rounded-2xl text-left border transition cursor-pointer flex items-start gap-3 ${
-                  isSelected
-                    ? 'bg-amber-500/15 border-amber-500 ring-2 ring-amber-500/30 text-amber-950'
-                    : 'bg-slate-50/80 border-slate-200/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                    isSelected ? 'bg-amber-600 text-white' : 'bg-slate-200 text-slate-600'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className="min-w-0 flex-1 space-y-0.5">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="text-xs font-bold text-slate-900">
-                      {proto.label}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200/80">
-                      {proto.shastraRef}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-tight">
-                    {proto.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 4. STEP 5: 6 BARRACKS MICRO-SWAPS CARD */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-          <Sparkles className="w-4 h-4 text-emerald-800" />
-          <div className="min-w-0 flex-1">
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Step 5 • 6 Barracks Micro-Swaps (Selectable)
-            </h3>
-            <p className="text-[11px] text-slate-500">
-              Immediate somatic and tactical substitutions to neutralize adrenaline spikes
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {BARRACKS_MICRO_SWAPS.map((swap) => {
-            const isSelected = selectedSwap === swap.title;
-            return (
-              <button
-                key={swap.id}
-                type="button"
-                onClick={() => handleSwapSelect(swap.title)}
-                className={`p-3 rounded-2xl text-left border transition cursor-pointer flex flex-col justify-between gap-1.5 ${
-                  isSelected
-                    ? 'bg-emerald-500/15 border-emerald-600 ring-2 ring-emerald-500/30 text-emerald-950 font-medium'
-                    : 'bg-slate-50/80 border-slate-200/80 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-1 w-full">
-                  <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-slate-900 block leading-snug">
-                      {swap.title}
-                    </span>
-                    <span className="text-[10px] text-slate-500 italic block">
-                      {swap.sanskrit}
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full border border-emerald-200/80 flex-shrink-0">
-                    {swap.duration}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-600 leading-tight">
-                  {swap.desc}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 5. DYNAMIC FEEDBACK BANNER */}
-      {gateFeedback && (
-        <div
-          className={`p-4 rounded-2xl text-xs sm:text-sm flex items-start gap-3 shadow-2xs transition-all duration-300 ${
-            gateFeedback.isError
-              ? 'bg-rose-50 border border-rose-200 text-rose-800 font-medium'
-              : gateFeedback.isAmber
-                ? 'bg-amber-50 border border-amber-300 text-amber-950 font-medium'
-                : 'bg-emerald-50 border border-emerald-300 text-emerald-900 font-semibold ring-2 ring-emerald-500/20'
-          }`}
-        >
-          {gateFeedback.isError ? (
-            <AlertTriangle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
-          ) : gateFeedback.isAmber ? (
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          ) : (
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-          )}
-          <span className="leading-relaxed">{gateFeedback.text}</span>
-        </div>
-      )}
-
-      {/* 6. DUAL ACTION BUTTONS */}
-      <div className="space-y-2.5 pt-1">
-        {/* Primary Interception Button */}
-        <button
-          type="button"
-          onClick={handleCommitInterception}
-          className={`w-full py-4 px-6 rounded-2xl font-bold text-sm sm:text-base transition-all duration-200 shadow-md shadow-orange-950/15 hover:shadow-lg hover:shadow-orange-950/20 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-3 relative overflow-hidden group ${
-            isSuccessFeedback
-              ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white ring-4 ring-emerald-500/30 scale-[1.01] shadow-emerald-600/20 shadow-lg'
-              : 'bg-[#D97706] hover:bg-[#B45309] active:bg-[#92400E] text-white border border-amber-400/40'
-          }`}
-        >
-          {isSuccessFeedback ? (
-            <div className="relative z-10 flex items-center justify-center gap-2.5">
-              <Sparkles className="w-5 h-5 text-emerald-200 animate-spin" />
-              <span className="tracking-wide">Pause Gate Engaged &amp; Impulse Intercepted!</span>
-            </div>
-          ) : (
-            <div className="relative z-10 flex items-center justify-center gap-2.5">
-              <ShieldCheck className="w-5 h-5 text-white transition-transform duration-300 group-hover:scale-110" />
-              <span className="tracking-wide">🛡️ Engage Pause Gate &amp; Intercept Impulse</span>
-            </div>
-          )}
-        </button>
-
-        {/* Secondary Mindful Slip Button */}
-        <button
-          type="button"
-          onClick={handleLogSlip}
-          className="w-full py-3 px-5 rounded-2xl border border-slate-200 bg-slate-50/80 hover:bg-amber-50/50 hover:border-amber-300/80 text-slate-700 hover:text-amber-950 transition-all duration-200 shadow-2xs hover:shadow-xs cursor-pointer flex items-center justify-center gap-2.5 active:scale-[0.98] group"
-        >
-          <RotateCcw className="w-4 h-4 text-slate-400 group-hover:text-amber-700 transition-colors" />
-          <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold">
-            <span>⚠️ Acted on Impulse — Log Honest Slip (No Guilt)</span>
-            <span className="text-[10px] font-bold text-slate-500 group-hover:text-amber-800 bg-white group-hover:bg-amber-100/70 px-2 py-0.5 rounded-full border border-slate-200/80 group-hover:border-amber-300 transition-colors">
-              Svādhyāya
+            <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+              {TERRAIN_LABELS[env]}
             </span>
           </div>
-        </button>
-      </div>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Pick 1 physical reset engineered for your current terrain to discharge adrenaline from your body:
+          </p>
 
-      {/* 7. TODAY'S SENTINEL INTERCEPTION ACTIVITY LOG */}
-      {todayInterceptions.length > 0 && (
-        <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-800" />
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900">
-                Today&apos;s Sentinel Interception Log ({todayInterceptions.length})
-              </h3>
-            </div>
-            <span className="text-[11px] font-semibold text-slate-500 font-mono">
-              PRQ Score: {prq.gateScore}/100
-            </span>
-          </div>
-
-          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-            {todayInterceptions.map((item) => {
-              const isSuccessful = isInterceptionSuccessful(item);
-              const stageName =
-                typeof item.cascadeStageReached === 'string'
-                  ? item.cascadeStageReached.replace(/_/g, ' ')
-                  : 'Stage 3';
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            {swaps.map((swap, idx) => {
+              const isSelected = selectedSwap === swap.title;
               return (
-                <div
-                  key={item.id}
-                  className={`p-3 rounded-2xl border transition-all text-xs flex items-center justify-between gap-3 ${
-                    isSuccessful
-                      ? 'bg-emerald-50/40 border-emerald-200/80 hover:border-emerald-300'
-                      : 'bg-rose-50/40 border-rose-200/80 hover:border-rose-300'
+                <button
+                  key={swap.id || idx}
+                  type="button"
+                  onClick={() => handleSwapSelect(swap.title)}
+                  className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-2.5 ${
+                    isSelected
+                      ? 'bg-amber-50/60 border-[#D97706] ring-1 ring-[#D97706]/20 shadow-2xs'
+                      : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/60'
                   }`}
                 >
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-slate-900">
-                        {item.triggerCategory}
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
+                      {swap.title}
+                    </h4>
+                    {isSelected ? (
+                      <span className="w-5 h-5 rounded-md bg-[#D97706] text-white flex items-center justify-center shrink-0">
+                        <Check className="w-3.5 h-3.5" />
                       </span>
-                      <span className="text-[11px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200/70">
-                        Intensity {item.urgeIntensity ?? 1}/5
-                      </span>
-                      <span className="text-[10px] text-slate-400">
-                        {stageName}
-                      </span>
-                    </div>
-                    {item.vitarkaText && (
-                      <p className="text-[11px] text-slate-600 italic truncate" title={item.vitarkaText}>
-                        &ldquo;{item.vitarkaText}&rdquo;
-                      </p>
-                    )}
-                    {item.pratipakshaText && (
-                      <p className="text-[11px] text-emerald-800 truncate" title={item.pratipakshaText}>
-                        ↳ {item.pratipakshaText}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="shrink-0 flex items-center">
-                    {isSuccessful ? (
-                      <button
-                        type="button"
-                        onClick={() => handleToggleSlip(item.id, true)}
-                        className="px-2.5 py-1.5 rounded-full text-[11px] font-bold bg-emerald-100 hover:bg-emerald-200/80 text-emerald-800 border border-emerald-300 flex items-center gap-1.5 cursor-pointer transition shadow-2xs active:scale-95 shrink-0"
-                        title="Intercepted & resolved (Click to toggle)"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Intercepted</span>
-                      </button>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleToggleSlip(item.id, false)}
-                        className="px-2.5 py-1.5 rounded-full text-[11px] font-bold bg-rose-100 hover:bg-emerald-100 text-rose-900 hover:text-emerald-900 border border-rose-300 hover:border-emerald-400 flex items-center gap-1.5 cursor-pointer transition shadow-2xs active:scale-95 shrink-0 group"
-                        title="Mindful slip — Click to resolve and restore Resilience Score"
-                      >
-                        <span className="flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3 text-rose-600 group-hover:text-emerald-600 transition-colors" />
-                          <span>Slip</span>
-                        </span>
-                        <span className="text-[10px] font-bold bg-white text-rose-700 group-hover:text-emerald-800 px-1.5 py-0.5 rounded-full border border-rose-200 group-hover:border-emerald-300 transition-colors">
-                          Resolve
-                        </span>
-                      </button>
+                      <span className="w-5 h-5 rounded-md border border-slate-300 shrink-0" />
                     )}
                   </div>
-                </div>
+                  <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed">
+                    {swap.description}
+                  </p>
+                  <div className="pt-2 border-t border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    {swap.tag}
+                  </div>
+                </button>
               );
             })}
           </div>
         </div>
-      )}
+
+        {/* Feedback Banner */}
+        {gateFeedback && (
+          <div
+            className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 transition-all ${
+              gateFeedback.isError
+                ? 'bg-red-50 border-red-200 text-red-900'
+                : gateFeedback.isAmber
+                ? 'bg-amber-50 border-amber-200 text-amber-950'
+                : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+            }`}
+          >
+            {gateFeedback.isError ? (
+              <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0" />
+            ) : gateFeedback.isAmber ? (
+              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            )}
+            <p className="font-medium leading-relaxed">{gateFeedback.text}</p>
+          </div>
+        )}
+
+        {/* ================= ACTION BUTTONS ================= */}
+        <div className="space-y-2.5 pt-1">
+          <button
+            type="button"
+            onClick={handleCommitInterception}
+            style={{
+              backgroundColor: isSuccessFeedback ? '#059669' : '#065F46',
+              color: '#FFFFFF',
+            }}
+            className="w-full py-3.5 px-4 rounded-xl font-bold text-xs hover:opacity-95 transition shadow-sm active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-300 flex-shrink-0" />
+            <span>Engage Impulse Interceptor &amp; Hold Reins</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLogSlip}
+            className="w-full py-3 px-4 rounded-xl font-semibold text-xs text-slate-700 bg-slate-100 hover:bg-slate-200/80 border border-slate-300/80 transition shadow-2xs active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+          >
+            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span>Reacted in Heat — Log Honest Slip (Zero Guilt)</span>
+          </button>
+        </div>
+
+        {/* ================= TODAY'S ACTIVITY & RESOLUTION ================= */}
+        {todayInterceptions.length > 0 && (
+          <div className="pt-4 border-t border-slate-200/80 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <Compass className="w-3.5 h-3.5 text-emerald-700" />
+                Today&apos;s Interceptions ({todayInterceptions.length})
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium">1-Tap Recovery</span>
+            </div>
+
+            <div className="space-y-2">
+              {todayInterceptions.slice(0, 5).map((item) => {
+                const isSuccessful = isInterceptionSuccessful(item);
+                return (
+                  <div
+                    key={item.id}
+                    className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                            isSuccessful ? 'bg-emerald-600' : 'bg-amber-500'
+                          }`}
+                        />
+                        <span className="font-bold text-slate-900 truncate">
+                          {item.triggerCategory}
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          {item.timestamp ? new Date(item.timestamp).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }) : ''}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate italic pl-4">
+                        {item.vitarkaText}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleSlip(item.id, isSuccessful)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex-shrink-0 cursor-pointer ${
+                        isSuccessful
+                          ? 'bg-emerald-100/70 text-emerald-800 hover:bg-amber-100 hover:text-amber-900'
+                          : 'bg-amber-100 text-amber-900 hover:bg-emerald-100 hover:text-emerald-900'
+                      }`}
+                    >
+                      {isSuccessful ? 'Intercepted' : 'Resolve Slip'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

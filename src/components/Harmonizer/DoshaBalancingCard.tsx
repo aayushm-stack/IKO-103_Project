@@ -40,7 +40,7 @@ const gunaConfigs: Record<GunaType, GunaConfig> = {
       'Mental lightness, effortless focus, transparent intellect (Buddhi), and freedom from anxious agitation or heavy lethargy.',
     dietTip: 'Consume fresh, light, seasonal whole foods (Mitahara) prepared with mindfulness.',
     lifestyleTip:
-      'Channel this clear intellect toward deep, uninterrupted study or contemplative reflection (Svadhyaya).',
+      'Channel this clear intellect toward deep, uninterrupted focus or contemplative reflection (Svadhyaya).',
   },
   Rajas: {
     label: 'Rajasic State',
@@ -187,7 +187,7 @@ export const DoshaBalancingCard: React.FC<DoshaBalancingCardProps> = ({
           <div className="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-start gap-3 shadow-2xs">
             <span className="text-base select-none">🧘</span>
             <div className="text-xs text-slate-700 leading-relaxed">
-              <strong className="font-bold text-slate-900">Pranic &amp; Study Habit: </strong>
+              <strong className="font-bold text-slate-900">Pranic &amp; Focus Habit: </strong>
               {config.lifestyleTip}
             </div>
           </div>
@@ -201,24 +201,21 @@ export const DoshaBalancingCard: React.FC<DoshaBalancingCardProps> = ({
             </h4>
           </div>
 
-          {/* Percentage Text Labels */}
+          {/* Legend Text Labels */}
           <div className="flex items-center justify-between text-xs font-medium">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-700 inline-block" />
               <span className="text-slate-700">Sattva</span>
-              <span className="font-bold text-emerald-800">{sattvaPct}%</span>
             </div>
 
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-600 inline-block" />
               <span className="text-slate-700">Rajas</span>
-              <span className="font-bold text-amber-800">{rajasPct}%</span>
             </div>
 
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-slate-500 inline-block" />
               <span className="text-slate-700">Tamas</span>
-              <span className="font-bold text-slate-700">{tamasPct}%</span>
             </div>
           </div>
 
@@ -230,7 +227,7 @@ export const DoshaBalancingCard: React.FC<DoshaBalancingCardProps> = ({
                 className="bg-emerald-700 h-full transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-white select-none"
                 title={`Sattva: ${sattvaPct}%`}
               >
-                {sattvaPct >= 14 && `${sattvaPct}%`}
+                {sattvaPct >= 8 && `${sattvaPct}%`}
               </div>
             )}
 
@@ -240,7 +237,7 @@ export const DoshaBalancingCard: React.FC<DoshaBalancingCardProps> = ({
                 className="bg-amber-600 h-full transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-white select-none"
                 title={`Rajas: ${rajasPct}%`}
               >
-                {rajasPct >= 14 && `${rajasPct}%`}
+                {rajasPct >= 8 && `${rajasPct}%`}
               </div>
             )}
 
@@ -250,7 +247,7 @@ export const DoshaBalancingCard: React.FC<DoshaBalancingCardProps> = ({
                 className="bg-slate-500 h-full transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-white select-none"
                 title={`Tamas: ${tamasPct}%`}
               >
-                {tamasPct >= 14 && `${tamasPct}%`}
+                {tamasPct >= 8 && `${tamasPct}%`}
               </div>
             )}
           </div>

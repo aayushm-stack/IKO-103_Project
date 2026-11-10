@@ -202,6 +202,20 @@ export const FALLBACK_SHASTRA_DATABASE: Record<ShastraFeatureKey, ShastraLensDat
     practicalModernApplication:
       'The Tri-Dosha engine acts as your early-warning biological radar. By tracking behavioral spikes—like Vata-aggravating late-night doomscrolling, Pitta-aggravating social comparison, or Kapha-aggravating lethargy—this feature translates ancient physiological wisdom into real-time, personalized course corrections to stabilize your nervous system.',
   },
+  sankalpa: {
+    id: 'shastra-sankalpa',
+    featureKey: 'sankalpa',
+    sourceText: 'Bhagavad Gita 2.41 & 6.5 • Śukla Yajurveda 34.6 (Śiva-Saṅkalpa Sūktam)',
+    commentaryReference: 'Adi Shankaracharya Bhashya on Gita 2.41 & 6.5, Śiva-Saṅkalpa Sūktam (Yajurveda 34.6)',
+    sanskritVerse:
+      'व्यवसायात्मिका बुद्धिरेकेह कुरुनन्दन ।\nबहुशाखा ह्यनन्ताश्च बुद्धयोऽव्यवसायिनाम् ॥ २.४१ ॥\n(तन्मे मनः शिवसङ्कल्पमस्तु — शुक्लयजुर्वेदः ३४.६)',
+    transliteration:
+      'vyavasāyātmikā buddhir ekeha kuru-nandana |\nbahu-śākhā hy anantāś ca buddhayo ’vyavasāyinām || 2.41 ||\n(tan me manaḥ śiva-saṅkalpam astu — Śukla Yajurveda 34.6)',
+    literalMeaning:
+      'On this path, the resolute intellect (Buddhi) is single-pointed and unified; many-branched and endless are the thoughts of the irresolute. Just as a skilled charioteer guides horses with the reins, may my mind be anchored in auspicious resolve (Śiva-Saṅkalpa).',
+    practicalModernApplication:
+      'In modern cognitive science (Implementation Intentions & Prefrontal Goal-Shielding), an unanchored mind defaults to automatic habit loops and cheap dopamine triggers. Explicitly defining Immediate Intentions alongside long-term Horizon Goals activates top-down executive steering in the prefrontal cortex—eliminating morning decision fatigue and giving your brain a concrete anchor when urges strike.',
+  },
 };
 /**
  * Resolves Shastra Lens scriptural data for any given feature module.

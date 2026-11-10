@@ -54,14 +54,14 @@ export interface CascadeStepInfo {
 }
 
 /**
- * Historical record of a Pause Gate intervention / loop-breaking event.
+ * Historical record of a Impulse Interceptor intervention / loop-breaking event.
  * Combines Gita 2.62-63 cascade tracking with Patanjali Yoga Sutra 2.33 (Pratipaksha Bhavana).
  */
 export interface InterceptionRecord {
   /** Unique record identifier */
   id: string;
 
-  /** ISO timestamp when the pause gate was triggered */
+  /** ISO timestamp when the impulse interceptor was triggered */
   timestamp: string;
 
   /** Categorical source of the compulsive urge */

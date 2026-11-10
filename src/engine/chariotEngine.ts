@@ -5,8 +5,29 @@ import {
   BhavaLog,
   BhavaCardData,
 } from '../types/iks';
-import { calculateGateScore, isInterceptionSuccessful } from './interceptorEngine';
-export { calculateGateScore, isInterceptionSuccessful } from './interceptorEngine';
+import {
+  calculateGateScore,
+  isInterceptionSuccessful,
+  calculateInterceptionStats,
+  InterceptionStats,
+} from './interceptorEngine';
+import {
+  calculateBhavaScore,
+  calculateBhavaStats,
+  isBhavaPositive,
+  isBhavaNegativeResolved,
+} from './bhavaEngine';
+
+export {
+  calculateGateScore,
+  isInterceptionSuccessful,
+  calculateInterceptionStats,
+  calculateBhavaScore,
+  calculateBhavaStats,
+  isBhavaPositive,
+  isBhavaNegativeResolved,
+};
+export type { InterceptionStats };
 
 /**
  * Diagnostic report matching the Katha Upanishad 1.3.3-4 Chariot Allegory:
@@ -28,42 +49,9 @@ export interface ChariotStatusReport {
   gateScore: number;
   bhavaScore: number;
   yuktaScore: number;
-}
-
-// isInterceptionSuccessful imported from ./interceptorEngine
-
-/**
- * Helper to determine if a Bhava Compass interaction represents a positive emotional buffer.
- */
-export function isBhavaPositive(item: any): boolean {
-  if (!item) return false;
-  if (typeof item.isPositive === 'boolean') return item.isPositive;
-  if (item.interactionType === 'positive_buffer') return true;
-  if (item.type === 'positive' || item.category === 'positive') return true;
-  if (
-    typeof item.appreciationMessage === 'string' &&
-    item.appreciationMessage.trim().length > 0
-  ) {
-    return true;
-  }
-  return false;
-}
-
-/**
- * Helper to determine if a negative Bhava Compass friction was successfully resolved.
- */
-export function isBhavaNegativeResolved(item: any): boolean {
-  if (!item) return false;
-  if (typeof item === 'boolean') return item;
-  if (typeof item.isResolved === 'boolean') return item.isResolved;
-  if (typeof item.resolved === 'boolean') return item.resolved;
-  if (item.interactionType === 'resolved_negative_friction') return true;
-  if (item.interactionType === 'unresolved_negative_friction') return false;
-  if (typeof item.success === 'boolean') return item.success;
-  if (item.status === 'resolved' || item.status === 'success') return true;
-  if (item.status === 'unresolved') return false;
-  if (item.targetGunaShift === 'Sattva') return true;
-  return false;
+  interceptionStats?: InterceptionStats;
+  loggedPillarCount?: number;
+  hasActivityToday?: boolean;
 }
 
 /**
@@ -76,113 +64,21 @@ export function isBhavaResolved(item: any): boolean {
 }
 
 /**
- * Calculates the Bhava Score using the Emotional Surplus (Buffer) algorithm.
+ * Evaluates the dynamic composure and gait of the Katha Upanishad Chariot.
  *
- * Mathematical Rules:
- * 1. If !todayBhavaLogs || todayBhavaLogs.length === 0:
- *    return 75 (Neutral Sattvic-Rajasic baseline when no Bhāva cards have been logged today).
- *
- * 2. Count totalPositives, totalNegatives, and resolvedNegatives using
- *    isBhavaPositive(item) and isBhavaNegativeResolved(item).
- *
- * Case A (totalNegatives === 0 and totalPositives > 0):
- *    Start from the neutral baseline of 75 and add the Emotional Surplus buffer (totalPositives * 20), clamped to 100:
- *    return Math.min(100, Math.round(75 + (totalPositives * 20)));
- *    (Now 1 positive card boosts BhavaScore from 75 -> 95, and 2+ positive cards reach 100!)
- *
- * Case B (totalNegatives > 0):
- *    Compute the resolution ratio: const resolutionRatio = resolvedNegatives / totalNegatives;
- *    const unresolvedCount = totalNegatives - resolvedNegatives;
- *
- *    If unresolvedCount === 0 (all encountered negative frictions have been resolved via YS 1.33):
- *      baseScore = 85; (Rewarding active emotional resolution above the passive 75 baseline, leaving room for +20 positive buffers to push it to 100).
- *
- *    If unresolvedCount > 0 (user has active, unresolved negative friction):
- *      baseScore = Math.max(10, Math.round((resolvedNegatives / totalNegatives) * 75) - (unresolvedCount * 15));
- *
- *    Add the Emotional Surplus buffer: const positiveBonus = totalPositives * 20;
- *    return Math.max(0, Math.min(100, Math.round(baseScore + positiveBonus)));
- *
- * (Encountering 1 unresolved negative drops BhavaScore to 10. Logging 1 Positive Buffer rescues it by +20 to 30.
- * Marking that negative friction as "Resolved" jumps BhavaScore to 85, and with a Positive Buffer it hits 100!)
- *
- * @param todayBhavaLogs Array of Bhava logs or card interactions from today
- * @returns BhavaScore clamped between 0 and 100
- */
-export function calculateBhavaScore(
-  todayBhavaLogs: (BhavaLog | BhavaCardData | any)[] = []
-): number {
-  if (!todayBhavaLogs || todayBhavaLogs.length === 0) {
-    return 75;
-  }
-
-  let totalPositives = 0;
-  let totalNegatives = 0;
-  let resolvedNegatives = 0;
-
-  for (const item of todayBhavaLogs) {
-    if (isBhavaPositive(item)) {
-      totalPositives += 1;
-    } else {
-      totalNegatives += 1;
-      if (isBhavaNegativeResolved(item)) {
-        resolvedNegatives += 1;
-      }
-    }
-  }
-
-  // Case A (totalNegatives === 0 and totalPositives > 0)
-  if (totalNegatives === 0) {
-    if (totalPositives > 0) {
-      return Math.min(100, Math.round(75 + totalPositives * 20));
-    }
-    return 75;
-  }
-
-  // Case B (totalNegatives > 0)
-  const resolutionRatio = resolvedNegatives / totalNegatives;
-  const unresolvedCount = totalNegatives - resolvedNegatives;
-
-  let baseScore: number;
-  if (unresolvedCount === 0) {
-    // All encountered negative frictions have been resolved via YS 1.33
-    baseScore = 85;
-  } else {
-    // User has active, unresolved negative friction
-    baseScore = Math.max(
-      10,
-      Math.round(resolutionRatio * 75) - unresolvedCount * 15
-    );
-  }
-
-  const positiveBonus = totalPositives * 20;
-  return Math.max(0, Math.min(100, Math.round(baseScore + positiveBonus)));
-}
-
-/**
- * Evaluates the dynamic composure and gait of the Katha Upanishad Chariot
- * using a Weighted Capacity Model where physical foundation (Yukta) anchors
- * cognitive and sensory composure.
- *
- * Mathematical Logic:
- * - Inactive Day / Reset Strict Override: If the user has logged 0 activity today across all subsystems
- *   (no sadhana log, no bhava logs, no urge interceptions), bypass the math and return
- *   special state: { state: 'Resting', score: 0 }.
- * - GateScore (0-100): Percentage of successfully intercepted urges today.
- *   If 0 triggers occurred, defaults to 100.
- * - BhavaScore (0-100): Emotional Surplus (Buffer) Algorithm:
- *   - If no logs today: returns neutral baseline 75.
- *   - If only positive buffers logged: Math.min(100, 75 + (totalPositives * 20)).
- *   - If negative frictions logged: unresolved friction drops baseScore to Math.max(10, (ratio * 75) - (unresolved * 15)),
- *     resolving all negatives restores base to 85, and positive buffers add +20 each.
- * - Final Composure Formula:
- *   - If only Bhāva Compass logged today: composureScore = BhavaScore (preventing 80% placeholder lock).
- *   - Otherwise: composureScore = Math.round((todayYuktaScore * 0.50) + (GateScore * 0.30) + (BhavaScore * 0.20)).
- *
- * Thresholds for Logged Days:
- * - composureScore > 75        => 'Calm'
- * - 40 <= composureScore <= 75 => 'Brisk'
- * - composureScore < 40        => 'Galloping'
+ * Rules:
+ * 1. Count Logged Sadhana Pillars Today (loggedPillarCount: 0 to 3).
+ * 2. Dynamic Composure Calculation (Solving the Unlogged Interceptor Bug):
+ *    - If interceptorActive === false (Nothing logged in Interceptor today):
+ *      composureScore = Math.round(0.65 * yuktaScore + 0.35 * bhavaScore);
+ *    - If interceptorActive === true (User logged Interceptions or Slips today):
+ *      composureScore = Math.round(0.50 * yuktaScore + 0.25 * prqScore + 0.25 * bhavaScore);
+ * 3. Progressive Chariot Gait & Color Thresholds:
+ *    - 'Resting': Nothing logged across entire app today (loggedPillarCount === 0 && !interceptorActive && !hasBhavaActivityToday),
+ *      OR (dominantGuna === 'Tamas' && composureScore < 42).
+ *    - 'Galloping': composureScore < 50, OR (loggedPillarCount === 1 && composureScore < 58).
+ *    - 'Brisk': composureScore >= 50 and does not meet all criteria for Calm.
+ *    - 'Calm': Requires ALL THREE: composureScore >= 75 AND loggedPillarCount >= 2 AND unresolvedNegativeBhavaCount === 0.
  */
 export function calculateChariotStatus(
   todayYuktaScore: number,
@@ -201,114 +97,110 @@ export function calculateChariotStatus(
   todayBhavaLogs: (BhavaLog | BhavaCardData | any)[] = [],
   hasTodayLogs?: boolean
 ): ChariotStatusReport {
-  // ================= 1. INACTIVE DAY OVERRIDE =================
-  // Inside calculateChariotStatus, at the very beginning of the function,
-  // evaluate if the user has engaged today at all across any subsystem.
-  // Helper to determine if a TrayopastambhaLog has at least one active pillar logged today
-  const isPillarActive = (log?: TrayopastambhaLog | null): boolean => {
-    if (!log) return false;
-    if (!log.loggedPillars) {
-      // Legacy logs without loggedPillars: active if date or yuktaScore exists
-      return Boolean(log.date || typeof log.yuktaScore === 'number');
-    }
-    return Boolean(
-      log.loggedPillars.ahara ||
-      log.loggedPillars.nidra ||
-      log.loggedPillars.brahmacharya
-    );
-  };
+  // 1. Data & Pillar Resolution
+  let loggedPillarCount = 0;
+  let dominantGuna: string | undefined = undefined;
+  let rawYuktaScore = 0;
+  let todayLogObj: TrayopastambhaLog | null = null;
 
-  const todaySadhana =
-    todayYuktaScoreOrLog !== undefined && todayYuktaScoreOrLog !== null
-      ? typeof todayYuktaScoreOrLog === 'number'
-        ? hasTodayLogs !== undefined
-          ? hasTodayLogs
-          : todayYuktaScoreOrLog > 0
-        : Array.isArray(todayYuktaScoreOrLog)
-        ? todayYuktaScoreOrLog.some((l) => isPillarActive(l))
-        : isPillarActive(todayYuktaScoreOrLog as TrayopastambhaLog)
-      : false;
-
-  const todayBhavas = todayBhavaLogs;
-
-  const hasNoActivityToday =
-    !todaySadhana &&
-    (!todayBhavas || todayBhavas.length === 0) &&
-    (!todayInterceptions || todayInterceptions.length === 0);
-
-  // If hasNoActivityToday is true, immediately return { state: 'Resting', score: 0 }
-  // Do not proceed to the mathematical calculations.
-  if (hasNoActivityToday) {
-    return {
-      composureScore: 0,
-      state: 'Resting',
-      horsesStatus: 'Calm and stabled in pasture; the senses await the morning wake-up.',
-      reinsStatus: 'Draped gently without tension; mental activity has not yet engaged the day.',
-      charioteerStatus:
-        'The charioteer (Buddhi) rests in tranquil stillness, awaiting your morning reflection.',
-      score: 0,
-      title: 'Resting (Dawn Stillness)',
-      upanishadAllegory:
-        'Katha Upanishad 1.3.3: "Know the Self as the rider in the chariot, the body as the chariot, the intellect as the charioteer, and the mind as the reins."',
-      gateScore: 0,
-      bhavaScore: 0,
-      yuktaScore: 0,
-    };
-  }
-
-  // ================= 2. DATA RESOLUTION =================
-  let rawYuktaScore = 75;
   if (typeof todayYuktaScoreOrLog === 'number') {
     rawYuktaScore = todayYuktaScoreOrLog;
-  } else if (Array.isArray(todayYuktaScoreOrLog) && todayYuktaScoreOrLog.length > 0) {
-    const latest = todayYuktaScoreOrLog[todayYuktaScoreOrLog.length - 1];
-    rawYuktaScore = latest?.yuktaScore ?? 75;
-  } else if (todayYuktaScoreOrLog && typeof (todayYuktaScoreOrLog as TrayopastambhaLog).yuktaScore === 'number') {
-    rawYuktaScore = (todayYuktaScoreOrLog as TrayopastambhaLog).yuktaScore;
+    if (hasTodayLogs) {
+      loggedPillarCount = rawYuktaScore > 0 ? 3 : 0;
+    }
+  } else if (todayYuktaScoreOrLog) {
+    if (Array.isArray(todayYuktaScoreOrLog)) {
+      todayLogObj = todayYuktaScoreOrLog[todayYuktaScoreOrLog.length - 1] ?? null;
+    } else {
+      todayLogObj = todayYuktaScoreOrLog;
+    }
+
+    if (todayLogObj) {
+      rawYuktaScore = typeof todayLogObj.yuktaScore === 'number' ? todayLogObj.yuktaScore : 0;
+      dominantGuna = todayLogObj.brahmacharya?.dominantGuna;
+      if (todayLogObj.loggedPillars) {
+        if (todayLogObj.loggedPillars.ahara) loggedPillarCount++;
+        if (todayLogObj.loggedPillars.nidra) loggedPillarCount++;
+        if (todayLogObj.loggedPillars.brahmacharya) loggedPillarCount++;
+      } else {
+        if (todayLogObj.yuktaScore > 0 || todayLogObj.date) {
+          loggedPillarCount = 3;
+        }
+      }
+    }
   }
-  const todayYuktaScore = Math.max(0, Math.min(100, Math.round(rawYuktaScore)));
+  const yuktaScore = Math.max(0, Math.min(100, Math.round(rawYuktaScore)));
 
-  // GateScore: Pratipaksha Resilience Quotient (PRQ)
-  const GateScore = calculateGateScore(todayInterceptions || []);
+  // 2. Interceptor & Bhāva Evaluation
+  const interceptionStats = calculateInterceptionStats(todayInterceptions || []);
+  const interceptorActive = interceptionStats.hasActivityToday;
+  const prqScore = interceptionStats.prqScore;
 
-  // BhavaScore: Emotional Surplus (Buffer) algorithm
-  const BhavaScore = calculateBhavaScore(todayBhavaLogs);
+  const bhavaStats = calculateBhavaStats(todayBhavaLogs || []);
+  const bhavaScore = bhavaStats.score;
+  const hasBhavaActivityToday = bhavaStats.hasBhavaActivityToday;
+  const unresolvedNegativeBhavaCount = bhavaStats.unresolvedCount;
 
-  // ================= 3. WEIGHTED CAPACITY MODEL =================
-  let composureScore: number;
-  if (
-    !todaySadhana &&
-    (!todayInterceptions || todayInterceptions.length === 0) &&
-    todayBhavaLogs &&
-    todayBhavaLogs.length > 0
-  ) {
-    // When a user logs only a Bhāva Compass interaction before logging Sadhana or Pause Gate,
-    // prevent hardcoded placeholder Yukta = 75 and GateScore = 100 from locking 80% of the score.
-    // Composure directly reflects the user's active emotional state.
-    composureScore = BhavaScore;
+  const hasAppActivityToday =
+    loggedPillarCount > 0 || interceptorActive || hasBhavaActivityToday;
+
+  // 3. Dynamic Composure Calculation
+  let composureScore = 0;
+  if (!hasAppActivityToday) {
+    composureScore = 0;
+  } else if (!interceptorActive) {
+    // Interceptor on standby: weight only Sadhana (65%) + Bhāva (35%)
+    composureScore = Math.round(0.65 * yuktaScore + 0.35 * bhavaScore);
   } else {
+    // Interceptor active: 50% Sadhana + 25% Interceptor + 25% Bhāva
     composureScore = Math.round(
-      todayYuktaScore * 0.5 + GateScore * 0.3 + BhavaScore * 0.2
+      0.50 * yuktaScore + 0.25 * prqScore + 0.25 * bhavaScore
     );
   }
+  composureScore = Math.max(0, Math.min(100, composureScore));
 
-  // ================= 4. STATE THRESHOLDS =================
+  // 4. Progressive Gait & State Thresholds
+  const isResting =
+    !hasAppActivityToday || (dominantGuna === 'Tamas' && composureScore < 42);
+
+  const isCalm =
+    composureScore >= 75 &&
+    loggedPillarCount >= 2 &&
+    unresolvedNegativeBhavaCount === 0;
+
+  const isGalloping =
+    composureScore < 50 || (loggedPillarCount === 1 && composureScore < 58);
+
   let state: ChariotState;
-  if (composureScore > 75) {
+  if (isResting) {
+    state = 'Resting';
+  } else if (isCalm) {
     state = 'Calm';
-  } else if (composureScore >= 40) {
-    state = 'Brisk';
-  } else {
+  } else if (isGalloping) {
     state = 'Galloping';
+  } else {
+    state = 'Brisk';
   }
 
-  // ================= 5. PHILOSOPHICAL STATUS REASONING =================
+  // If completely inactive today, override composureScore to 0 for pristine resting view
+  if (!hasAppActivityToday) {
+    composureScore = 0;
+  }
+
+  // 5. Philosophical Status Reasoning
   let charioteerStatus: string;
   let reinsStatus: string;
   let horsesStatus: string;
 
-  if (state === 'Calm') {
-    if (todayYuktaScore >= 80) {
+  if (state === 'Resting') {
+    charioteerStatus =
+      'The charioteer (Buddhi) rests in tranquil stillness, awaiting your morning reflection.';
+    reinsStatus =
+      'Draped gently without tension; mental activity has not yet engaged the day.';
+    horsesStatus =
+      'Calm and stabled in pasture; the senses await the morning wake-up.';
+  } else if (state === 'Calm') {
+    if (yuktaScore >= 80) {
       charioteerStatus =
         'Luminous and poised in Sattva; the intellect (Buddhi) directs the chariot with effortless clarity, firmly anchored in physiological equilibrium.';
     } else {
@@ -317,19 +209,19 @@ export function calculateChariotStatus(
     }
 
     reinsStatus =
-      GateScore >= 80
+      interceptorActive && prqScore >= 80
         ? 'Supple, centered, and responsive; mental impulses (Manas) are guided without strain.'
-        : 'Steady but monitored; mental focus holds the course.';
+        : 'Steady and responsive; mental focus holds the course without agitation.';
 
     horsesStatus =
-      todayInterceptions.length === 0
+      !interceptorActive || interceptionStats.interceptedCount === 0
         ? 'Gentle and content in pasture; no sensory distractions have unseated the senses today.'
         : 'Rhythmic, subdued, and noble; senses follow the chariot without bolting after cheap dopamine.';
   } else if (state === 'Brisk') {
-    if (todayYuktaScore < 50 && GateScore >= 70) {
+    if (yuktaScore < 50 && (!interceptorActive || prqScore >= 70)) {
       charioteerStatus =
         'The charioteer is physically fatigued from depleted sleep or nutrition, but is pulling the reins hard to steer through turbulence.';
-    } else if (GateScore < 50) {
+    } else if (interceptorActive && prqScore < 50) {
       charioteerStatus =
         'The intellect is actively negotiating multiple sensory surges, striving to separate fleeting Preyas from enduring Śreyas.';
     } else {
@@ -338,17 +230,17 @@ export function calculateChariotStatus(
     }
 
     reinsStatus =
-      GateScore >= 70
+      interceptorActive && prqScore >= 70
         ? 'Taut and held firm; deliberate Pratipaksha Bhavana prevents runaway impulsive loops.'
         : 'Strained by fluctuating impulses; the mind requires conscious reinforcement to stabilize.';
 
     horsesStatus =
-      todayYuktaScore < 50
+      yuktaScore < 50
         ? 'Restless from physiological depletion; irregular circadian rhythm makes the senses skittish and prone to sudden cravings.'
         : 'High energetic drive; forward sensory momentum is spirited but contained under active steering.';
   } else {
-    // Galloping (< 40)
-    if (todayYuktaScore < 40) {
+    // Galloping (< 50 or incomplete foundation)
+    if (yuktaScore < 40) {
       charioteerStatus =
         'The physical foundation (Yukta) is severely depleted, leaving the charioteer (Buddhi) weakened as runaway impulses overpower conscious discernment.';
     } else {
@@ -393,8 +285,14 @@ export function calculateChariotStatus(
     score: composureScore,
     title: titles[state],
     upanishadAllegory: allegories[state],
-    gateScore: GateScore,
-    bhavaScore: BhavaScore,
-    yuktaScore: todayYuktaScore,
+    gateScore: prqScore,
+    bhavaScore,
+    yuktaScore,
+    interceptionStats,
+    loggedPillarCount,
+    hasActivityToday: hasAppActivityToday,
   };
 }
+
+/** Export evaluateChariotState alias */
+export const evaluateChariotState = calculateChariotStatus;

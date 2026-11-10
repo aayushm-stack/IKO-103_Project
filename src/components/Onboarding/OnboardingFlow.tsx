@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AlertCircle, BookOpen, Shield } from 'lucide-react';
+import { LIFE_RHYTHMS } from '../../data/seekerShastraData';
+import { DEPLOYMENT_ENVIRONMENTS } from '../../data/sentinelShastraData';
+import { LifeRhythm, DeploymentEnvironment } from '../../types/shastra';
+
 import { useBrahmaPath } from '../../context/BrahmaPathContext';
 import appLogo from '../../assets/logo.png';
 
@@ -9,6 +13,13 @@ export interface OnboardingFlowProps {
 }
 
 export type OnboardingStep = 'splash' | 'bridge' | 'seeker_pledge' | 'sentinel_pledge';
+
+export const FOUNDATIONAL_SEEKER_SANKALPA =
+  '“I step onto this path not to punish myself into perfection, but to elevate myself by my own mind. When my attention wanders into distraction, I will pause without guilt. When my body is tired, I will honor its rest. Day by day, breath by breath, I choose to hold the reins of my own mind—acting as my own gentlest guide and truest friend.”';
+
+export const FOUNDATIONAL_SENTINEL_SANKALPA =
+  '“Standing between high-alert duty and the quiet love for those waiting at home, I choose to guard my inner peace. When sleepless watches, harsh orders, or heavy memories pull at my mind, I will not fight myself in silence. I will honor my body\'s recovery, release what lies beyond my control, and hold the reins of my mind with steadiness, honor, and self-compassion.”';
+
 
 /**
  * Geometric element description for the Page 1 corner grid.
@@ -35,7 +46,7 @@ interface GeometricItem {
  *  - Contextual connection to Kurukshetra and battleground selector (Seeker vs. Sentinel).
  *
  * Page 3A: The Inner Battleground Pledge (step === 'seeker_pledge')
- *  - Grounded greeting for students and civilian seekers.
+ *  - Grounded greeting for seekers across all walks of life.
  *  - Name entry with offline reassurance, Bhagavad Gita 6.5 Sankalpa sacred pledge,
  *    and navigation into the Chariot Home Dashboard.
  *
@@ -86,6 +97,20 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
   // Form states for Page 3 (Name & Pledge)
   const [nameInput, setNameInput] = useState<string>('');
   const [validationError, setValidationError] = useState<string>('');
+  // Selected civilian rhythm on Page 3A (default 'learning_study')
+  const [selectedRhythm, setSelectedRhythm] = useState<LifeRhythm>('learning_study');
+
+  // Selected frontline environment on Page 3B (default 'active_border')
+  const [selectedEnv, setSelectedEnv] = useState<DeploymentEnvironment>('active_border');
+
+  const handleRhythmSelect = (rhythm: LifeRhythm) => {
+    setSelectedRhythm(rhythm);
+  };
+
+  const handleEnvSelect = (env: DeploymentEnvironment) => {
+    setSelectedEnv(env);
+  };
+
 
   // 3-Stage Staggered Load Animation for Page 1 (Zero animations after Page 1)
   useEffect(() => {
@@ -197,15 +222,14 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
     }
     setValidationError('');
 
-    const sankalpaText =
-      'I choose to hold the reins of my own mind as my own gentlest guide and truest friend.';
-
     // 1. Context updates
     setUserName(trimmed);
     updatePreferences({
       name: trimmed,
       battlegroundPath: 'inner',
-      sankalpa: sankalpaText,
+      lifeRhythm: selectedRhythm,
+      customSankalpa: FOUNDATIONAL_SEEKER_SANKALPA,
+      sankalpa: FOUNDATIONAL_SEEKER_SANKALPA,
       onboardingCompleted: true,
     });
 
@@ -240,15 +264,14 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
     }
     setValidationError('');
 
-    const sentinelSankalpa =
-      'Standing between high-alert duty and the quiet love for those waiting at home, I choose to guard my inner peace. When sleepless watches, harsh orders, or heavy memories pull at my mind, I will not fight myself in silence. I will honor my body\'s recovery, release what lies beyond my control, and hold the reins of my mind with steadiness, honor, and self-compassion.';
-
     // 1. Context updates
     setUserName(trimmed);
     updatePreferences({
       name: trimmed,
       battlegroundPath: 'frontline',
-      sankalpa: sentinelSankalpa,
+      deploymentEnvironment: selectedEnv,
+      customSankalpa: FOUNDATIONAL_SENTINEL_SANKALPA,
+      sankalpa: FOUNDATIONAL_SENTINEL_SANKALPA,
       onboardingCompleted: true,
     });
 
@@ -421,7 +444,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
               Five thousand years ago, the Bhagavad Gita was not recited inside a quiet forest monastery. It was spoken in the middle of Kurukshetra—between two armies—to a warrior whose bow was slipping from his hands under the weight of duty, grief, and inner turmoil.
             </p>
             <p>
-              Yet its wisdom is timeless. Whether your daily struggle takes place in the quiet pressure of study and civilian life, or on the high-alert frontlines of uniformed service, the charioteer within you holds the exact same reins.
+              Yet its wisdom is timeless. Whether your daily struggle takes place in the quiet pressure of daily civilian life, or on the high-alert frontlines of uniformed defense service, the charioteer within you holds the exact same reins.
             </p>
           </div>
 
@@ -464,10 +487,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
                 </div>
               </div>
               <span className="text-[11px] font-semibold text-[#D97706] mt-0.5 block">
-                Path of the Seeker • Civilian &amp; Student Life
+                Path of the Seeker • Everyday Life &amp; Inner Mastery
               </span>
               <p className="text-xs text-slate-600 leading-relaxed mt-1.5">
-                For navigating academic pressure, career focus, everyday emotional friction, and modern digital noise.
+                For navigating daily responsibilities, personal focus, emotional friction, and modern digital noise.
               </p>
             </button>
 
@@ -539,23 +562,16 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
       >
         <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-xs space-y-6 max-w-md w-full">
           {/* Top Back Link & Section Header */}
-          <div className="space-y-1">
+          <div className="space-y-3">
             <button
               type="button"
               onClick={() => setStep('bridge')}
-              className="text-xs font-semibold text-slate-500 hover:text-slate-800 inline-flex items-center gap-1 cursor-pointer mb-1"
+              className="text-xs font-semibold text-slate-500 hover:text-slate-800 inline-flex items-center gap-1.5 cursor-pointer transition-colors"
             >
               <span>← Change Battleground Path</span>
             </button>
 
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-700 flex-shrink-0" />
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-                First Step • Inner Sanctuary
-              </span>
-            </div>
-
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900 mt-1">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
               Welcome to Your Quiet Sanctuary
             </h2>
           </div>
@@ -601,19 +617,63 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
             )}
           </div>
 
-          {/* Box 3 — The Sankalpa (Heart-Touching Pledge to Oneself) */}
+          {/* Box 3 — Life Rhythm Selection (Stacked Below Each Other) */}
           <div className="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                Your Sankalpa (Inner Pledge of Self-Mastery)
+            <div>
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                Choose Your Daily Life Rhythm
               </span>
-              <span className="text-[10px] text-slate-400 font-semibold">
-                Bhagavad Gita 6.5
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Tailors your daily focus prompts, triggers, and foundational Sankalpa to your life reality.
+              </p>
+            </div>
+
+            <div className="space-y-2.5">
+              {LIFE_RHYTHMS.map((rhythm) => {
+                const isSelected = selectedRhythm === rhythm.id;
+                return (
+                  <button
+                    key={rhythm.id}
+                    type="button"
+                    onClick={() => handleRhythmSelect(rhythm.id)}
+                    className={`w-full text-left p-3.5 rounded-xl border transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-50/80 border-emerald-700/80 text-slate-900 shadow-2xs'
+                        : 'bg-white border-slate-200/90 text-slate-700 hover:bg-slate-50/90'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-slate-900">{rhythm.label}</span>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                          isSelected ? 'border-emerald-700 bg-white' : 'border-slate-300 bg-white'
+                        }`}
+                      >
+                        {isSelected && <span className="w-2 h-2 rounded-full bg-emerald-700" />}
+                      </div>
+                    </div>
+                    <span className="text-[10.5px] font-semibold text-[#D97706] mt-0.5 block">
+                      {rhythm.badge}
+                    </span>
+                    <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                      {rhythm.summary}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Box 4 — The Sankalpa (Heart-Touching Pledge to Oneself) */}
+          <div className="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-3">
+            <div>
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                Your Sankalpa (Inner Pledge)
               </span>
             </div>
 
             <div className="p-4 bg-white rounded-xl border border-slate-200/90 text-xs sm:text-sm text-slate-700 leading-relaxed font-serif italic">
-              &ldquo;I step onto this path not to punish myself into perfection, but to elevate myself by my own mind. When my attention wanders into distraction, I will pause without guilt. When my body is tired, I will honor its rest. Day by day, breath by breath, I choose to hold the reins of my own mind—acting as my own gentlest guide and truest friend.&rdquo;
+              {FOUNDATIONAL_SEEKER_SANKALPA}
             </div>
 
             <p className="text-[11px] text-slate-500 font-medium">
@@ -646,23 +706,16 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
     >
       <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-xs space-y-6 max-w-md w-full">
         {/* Top Back Link & Section Header */}
-        <div className="space-y-1">
+        <div className="space-y-3">
           <button
             type="button"
             onClick={() => setStep('bridge')}
-            className="text-xs font-semibold text-slate-500 hover:text-slate-800 inline-flex items-center gap-1 cursor-pointer mb-1"
+            className="text-xs font-semibold text-slate-500 hover:text-slate-800 inline-flex items-center gap-1.5 cursor-pointer transition-colors"
           >
             <span>← Change Battleground Path</span>
           </button>
 
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-700 flex-shrink-0" />
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-              Frontline Sanctuary • Path of the Sentinel
-            </span>
-          </div>
-
-          <h2 className="text-lg sm:text-xl font-bold text-slate-900 mt-1">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
             Welcome to Your Quiet Bunker of Mind
           </h2>
         </div>
@@ -696,7 +749,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
                 setValidationError('');
               }
             }}
-            placeholder="Enter your name or callsign (e.g., Vikram)"
+            placeholder="Enter your name or callsign"
             className="w-full p-3.5 border border-slate-300 rounded-xl bg-white text-sm text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700"
           />
 
@@ -710,17 +763,14 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
 
         {/* Box 3 — The Sentinel's Sankalpa (Warrior's Inner Pledge) */}
         <div className="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              Your Sankalpa (Warrior&apos;s Inner Pledge)
-            </span>
-            <span className="text-[10px] text-slate-400 font-semibold">
-              Bhagavad Gita 2.48 &amp; 6.5
+          <div>
+            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+              Your Sankalpa (Inner Pledge)
             </span>
           </div>
 
           <div className="p-4 bg-white rounded-xl border border-slate-200/90 text-xs sm:text-sm text-slate-700 leading-relaxed font-serif italic">
-            &ldquo;Standing between high-alert duty and the quiet love for those waiting at home, I choose to guard my inner peace. When sleepless watches, harsh orders, or heavy memories pull at my mind, I will not fight myself in silence. I will honor my body&apos;s recovery, release what lies beyond my control, and hold the reins of my mind with steadiness, honor, and self-compassion.&rdquo;
+            {FOUNDATIONAL_SENTINEL_SANKALPA}
           </div>
 
           <p className="text-[11px] text-slate-500 font-medium">

@@ -8,7 +8,7 @@ import {
 
 export interface ScreenTimeZoneEvaluation {
   zone: 'deep_recovery' | 'steady_reduction' | 'maintained' | 'above_baseline';
-  points: number; // Out of 10 max Ahara screen points
+  points: number; // Out of 12 max Ahara screen points
   shortBadge: string; // Concise pill label for Vault & Sadhana
   sadhanaFeedback: string; // Supportive psychological message shown below the Sadhana slider
   pillStyle: {
@@ -19,19 +19,33 @@ export interface ScreenTimeZoneEvaluation {
   };
 }
 
+/**
+ * Evaluates screen time into a supportive category and feedback.
+ * Uses a smooth continuous formula internally for scoring (0–12 pts).
+ */
 export function evaluateScreenTimeZone(
   digitalMinutes: number,
   baselineMinutes: number = 360
 ): ScreenTimeZoneEvaluation {
-  const safeBaseline = Math.max(120, baselineMinutes || 360);
+  const safeBaseline = Math.max(60, baselineMinutes || 360);
   const mins = Math.max(0, digitalMinutes);
-  const ratio = mins / safeBaseline;
+  const r = mins / safeBaseline;
 
-  // Zone 1: Deep Recovery (<= 50% of personal baseline, e.g., 0–4h for an 8h baseline)
-  if (ratio <= 0.5) {
+  // Continuous relative screen time calculation (0–12 pts)
+  let points = 0;
+  if (r <= 0.75) {
+    points = Math.round(12 - 2.67 * r);
+  } else if (r <= 1.0) {
+    points = Math.round(10 - 12 * (r - 0.75));
+  } else {
+    points = Math.max(0, Math.round(7 - 11.67 * (r - 1.0)));
+  }
+
+  // Zone 1: Deep Recovery (<= 50% of personal baseline)
+  if (r <= 0.5) {
     return {
       zone: 'deep_recovery',
-      points: 10,
+      points,
       shortBadge: 'Significantly Dropped',
       sadhanaFeedback:
         'Significant drop below your average! You reclaimed deep hours from the screen today and honored your inner Sankalpa.',
@@ -44,11 +58,11 @@ export function evaluateScreenTimeZone(
     };
   }
 
-  // Zone 2: Steady Reduction (50% to 85% of personal baseline, e.g., 4.5–6.5h for an 8h baseline)
-  if (ratio <= 0.85) {
+  // Zone 2: Steady Reduction (50% to 85% of personal baseline)
+  if (r <= 0.85) {
     return {
       zone: 'steady_reduction',
-      points: 8,
+      points,
       shortBadge: 'Dropped a Bit',
       sadhanaFeedback:
         'Yes, you recovered well! You stepped back from your usual screen habit today and redirected energy toward real focus.',
@@ -61,11 +75,11 @@ export function evaluateScreenTimeZone(
     };
   }
 
-  // Zone 3: Maintained Baseline (85% to 112.5% of personal baseline, e.g., 7–9h for an 8h baseline)
-  if (ratio <= 1.125) {
+  // Zone 3: Maintained Baseline (85% to 112.5% of personal baseline)
+  if (r <= 1.125) {
     return {
       zone: 'maintained',
-      points: 5,
+      points,
       shortBadge: 'Maintained Urges',
       sadhanaFeedback:
         'You held your ground within your current average. You are containing your urges steadily—keep trying gently to step this down.',
@@ -78,10 +92,10 @@ export function evaluateScreenTimeZone(
     };
   }
 
-  // Zone 4: Above Baseline (> 112.5% of personal baseline, e.g., > 9h for an 8h baseline)
+  // Zone 4: Above Baseline (> 112.5% of personal baseline)
   return {
     zone: 'above_baseline',
-    points: 1,
+    points,
     shortBadge: 'Above Average',
     sadhanaFeedback:
       'You used your screen more than your average today. Remember your Sankalpa pledge—do not judge yourself, forgive the drift, and reclaim your focus tomorrow.',
@@ -97,112 +111,159 @@ export function evaluateScreenTimeZone(
 /**
  * Computes individual pillar scores for Ahara, Nidra, and Brahmacharya.
  * Returns exact individual scores: ahara (0–34), nidra (0–33), brahmacharya (0–33).
- * Natively supports optional Sentinel telemetry while maintaining 100% backward compatibility for Stage 1.
+ * If loggedPillars is passed:
+ *   - ahara returns 0 if loggedPillars.ahara is false
+ *   - nidra returns 0 if loggedPillars.nidra is false
+ *   - brahmacharya returns 0 if loggedPillars.brahmacharya is false
  */
 export function getPillarScores(
   ahara: AharaLog,
   nidra: NidraLog,
-  brahmacharya: BrahmacharyaLog
+  brahmacharya: BrahmacharyaLog,
+  loggedPillars?: { ahara?: boolean; nidra?: boolean; brahmacharya?: boolean }
 ): {
   ahara: number;
   nidra: number;
   brahmacharya: number;
 } {
-  // 1. Ahara Scoring (Max 34 pts)
-  let aharaScore = 0;
+  // -------------------------------------------------------------
+  // 1. Āhāra Pillar (Max 34 pts, returns 0 if loggedPillars && !loggedPillars.ahara)
+  // -------------------------------------------------------------
+  let nutritionPts = 0;
   if (ahara.watchStimulantProfile) {
     if (ahara.watchStimulantProfile === 'balanced_ration') {
-      aharaScore += 12; // Balanced operational ration awards full 12 pts
+      nutritionPts = 10;
     } else if (ahara.watchStimulantProfile === 'high_watch_caffeine') {
-      aharaScore += 8; // Recognizing operational sentry need while noting stimulant load
+      nutritionPts = 6;
     } else {
-      aharaScore += 3; // Irregular or missed ration awards 3 pts
+      nutritionPts = 2; // irregular_missed
     }
   } else {
     if (ahara.nutritionQuality === 'Sattvic') {
-      aharaScore += 16;
+      nutritionPts = 10;
     } else if (ahara.nutritionQuality === 'Rajasic') {
-      aharaScore += 9;
+      nutritionPts = 6;
     } else {
-      aharaScore += 3;
+      nutritionPts = 2; // Tamasic
     }
   }
 
-  const baselineMins = ahara.baselineMinutesAtLog ?? 360;
-  const screenEval = evaluateScreenTimeZone(ahara.digitalConsumptionMinutes, baselineMins);
-  aharaScore += screenEval.points;
-
-  const mindfulnessNormalized = Math.max(1, Math.min(5, ahara.sensoryMindfulnessScore));
-  aharaScore += Math.round((mindfulnessNormalized / 5) * 8);
-
-  // 2. Nidra Scoring (Max 33 pts) - Gita 6.17 two-sided moderation
-  let nidraScore = 0;
-  const hours = nidra.hoursSlept;
-  if (hours >= 6.5 && hours <= 8.0) {
-    nidraScore += 16; // Peak restorative zone
-  } else if ((hours >= 6.0 && hours < 6.5) || (hours > 8.0 && hours <= 8.5)) {
-    nidraScore += 12; // Slight deviation
-  } else if ((hours >= 5.0 && hours < 6.0) || (hours > 8.5 && hours <= 9.5)) {
-    nidraScore += 7; // Noticeable deviation
+  // Continuous Relative Screen Time (0–12 pts)
+  const defaultBaselineMinutes = 360;
+  const baseline = Math.max(60, ahara.baselineMinutesAtLog ?? defaultBaselineMinutes);
+  const digitalMins = Math.max(0, ahara.digitalConsumptionMinutes || 0);
+  const r = digitalMins / baseline;
+  let screenPts = 0;
+  if (r <= 0.75) {
+    screenPts = Math.round(12 - 2.67 * r); // 12 down to 10 pts
+  } else if (r <= 1.0) {
+    screenPts = Math.round(10 - 12 * (r - 0.75)); // 10 down to 7 pts
   } else {
-    // Severe deprivation (<5h) or excessive Tamasic slumber (>9.5h)
-    nidraScore += 2;
+    screenPts = Math.max(0, Math.round(7 - 11.67 * (r - 1.0))); // 7 down to 0 pts
   }
 
-  if (nidra.restQuality === 'Restorative') {
-    nidraScore += 11;
-  } else if (nidra.restQuality === 'Disturbed') {
-    nidraScore += 5;
-  } else {
-    nidraScore += 4; // Lethargic
+  // Sensory Mindfulness / Call Digestion Slider (1–5 -> 0–12 pts)
+  const mindfulScore = ahara.sensoryMindfulnessScore || 1;
+  const mindfulPts = Math.max(0, Math.min(12, Math.round((mindfulScore - 1) * 3))); // 0, 3, 6, 9, 12 pts
+
+  let aharaScore = Math.min(34, nutritionPts + screenPts + mindfulPts);
+  if (loggedPillars && !loggedPillars.ahara) {
+    aharaScore = 0;
   }
 
-  // Sentinel watchRestProtocol vs. Stage 1 bedtimeConsistency
-  if (nidra.watchRestProtocol === 'split_sentry_kurma') {
-    nidraScore += 8; // Full consistency points for disciplined Kurma sensory withdrawal
-    if (hours >= 5.0 && hours <= 9.5) {
-      nidraScore += 3; // Tactical recovery bonus (capped so nidraScore <= 33)
-    }
-  } else if (nidra.watchRestProtocol === 'post_watch_hypervigilance') {
-    nidraScore += 2; // 2 consistency points instead of 8
-  } else if (nidra.watchRestProtocol === 'continuous_bunk') {
-    nidraScore += nidra.bedtimeConsistency ? 8 : 2;
+  // -------------------------------------------------------------
+  // 2. Nidrā Pillar (Max 33 pts, returns 0 if loggedPillars && !loggedPillars.nidra)
+  // -------------------------------------------------------------
+  // Continuous Sleep Hours (0–12h, step 0.5 -> 0–15 pts)
+  const h = Math.max(0, nidra.hoursSlept || 0);
+  let sleepPts = 0;
+  if (h <= 7.5) {
+    sleepPts = Math.round((h / 7.5) * 15); // +1 pt for every 0.5h
+  } else if (h <= 8.5) {
+    sleepPts = 15;
   } else {
-    if (nidra.bedtimeConsistency) {
-      nidraScore += 6;
+    sleepPts = Math.max(6, Math.round(15 - (h - 8.5) * 2)); // gentle oversleep taper
+  }
+
+  // Split-Sentry Tactical Compensation (+3 pts capped at 15 if h >= 4.5 && h < 7.5)
+  if (nidra.watchRestProtocol === 'split_sentry_kurma' && h >= 4.5 && h < 7.5) {
+    sleepPts = Math.min(15, sleepPts + 3);
+  }
+
+  // Consistency / Watch Rest Protocol (0–8 pts)
+  let consistencyPts = 0;
+  if (nidra.watchRestProtocol) {
+    if (nidra.watchRestProtocol === 'continuous_bunk') {
+      consistencyPts = 8;
+    } else if (nidra.watchRestProtocol === 'split_sentry_kurma') {
+      consistencyPts = 8;
     } else {
-      nidraScore += 2;
+      consistencyPts = 2; // post_watch_hypervigilance
     }
+  } else {
+    consistencyPts = nidra.bedtimeConsistency ? 8 : 2;
   }
 
-  // 3. Brahmacharya Scoring (Max 33 pts) - Energy conservation & deep work
-  let brahmacharyaScore = 0;
-  const conservationNormalized = Math.max(
-    1,
-    Math.min(5, brahmacharya.energyConservationRating)
-  );
-  brahmacharyaScore += Math.round((conservationNormalized / 5) * 14);
+  // Sleep Quality (0–10 pts): 'Restorative' -> 10, 'Fragmented' -> 5, 'Depleted' -> 1
+  let qualityPts = 1;
+  const rq = nidra.restQuality as string;
+  if (rq === 'Restorative') {
+    qualityPts = 10;
+  } else if (rq === 'Fragmented' || rq === 'Disturbed') {
+    qualityPts = 5;
+  } else {
+    qualityPts = 1; // Depleted or Lethargic
+  }
 
-  const cappedBlocks = Math.min(5, Math.max(0, brahmacharya.focusedStudyBlocks));
-  brahmacharyaScore += Math.round((cappedBlocks / 5) * 12);
+  let nidraScore = Math.min(33, sleepPts + consistencyPts + qualityPts);
+  if (loggedPillars && !loggedPillars.nidra) {
+    nidraScore = 0;
+  }
 
-  // Sentinel sahyogCohesion vs. Stage 1 dominantGuna
+  // -------------------------------------------------------------
+  // 3. Brahmacharya / Vīrya Pillar (Max 33 pts, returns 0 if loggedPillars && !loggedPillars.brahmacharya)
+  // -------------------------------------------------------------
+  // Energy Conservation / Ojas Coping Reserve Slider (1–5 -> 0–12 pts)
+  const energyScore =
+    (brahmacharya as any).energyConservationScore ??
+    brahmacharya.energyConservationRating ??
+    1;
+  const energyPts = Math.max(0, Math.min(12, Math.round((energyScore - 1) * 3))); // 0, 3, 6, 9, 12 pts
+
+  // Focus Sessions / Grounding Wins (0–13 pts)
+  const blocks = Math.max(0, brahmacharya.focusedStudyBlocks || 0);
+  let focusPts = 0;
+  if (brahmacharya.sahyogCohesion !== undefined) {
+    // Stage 2 Defense 0–6 scale
+    focusPts = Math.min(13, Math.round(blocks * 3.25));
+  } else {
+    // Stage 1 Civilian 0–10 scale
+    focusPts = Math.min(13, Math.round(blocks * 2.2));
+  }
+
+  // Guna / Sahyog Cohesion (0–8 pts)
+  let gunaPts = 1;
   if (brahmacharya.sahyogCohesion) {
     if (brahmacharya.sahyogCohesion === 'sahyog_connected') {
-      brahmacharyaScore += 8; // Full 8 Guna/Cohesion points
+      gunaPts = 8;
     } else if (brahmacharya.sahyogCohesion === 'command_friction') {
-      brahmacharyaScore += 4; // 4 points
+      gunaPts = 4;
     } else {
-      brahmacharyaScore += 1; // barracks_isolated awards 1 point
+      gunaPts = 1; // barracks_isolated
     }
   } else {
     if (brahmacharya.dominantGuna === 'Sattva') {
-      brahmacharyaScore += 7;
+      gunaPts = 8;
     } else if (brahmacharya.dominantGuna === 'Rajas') {
-      brahmacharyaScore += 4;
+      gunaPts = 4;
     } else {
-      brahmacharyaScore += 1;
+      gunaPts = 1; // Tamas
     }
+  }
+
+  let brahmacharyaScore = Math.min(33, energyPts + focusPts + gunaPts);
+  if (loggedPillars && !loggedPillars.brahmacharya) {
+    brahmacharyaScore = 0;
   }
 
   return {
@@ -252,6 +313,9 @@ export function computeYuktaScore(
   return Math.min(100, Math.max(0, Math.round((earned / maxPossible) * 100)));
 }
 
+/** Export calculateYuktaScore alias for full compatibility */
+export const calculateYuktaScore = computeYuktaScore;
+
 /**
  * Evaluates a complete balance diagnostic summary across the Trayopastambha pillars.
  * Detects the limiting pillar and provides shastra-grounded recommendations from Charaka Su. 11.35 / Gita 6.17.
@@ -263,7 +327,7 @@ export function evaluateYuktaSummary(
   loggedPillars?: { ahara?: boolean; nidra?: boolean; brahmacharya?: boolean }
 ): YuktaBalanceSummary {
   const overallScore = computeYuktaScore(ahara, nidra, brahmacharya, loggedPillars);
-  const scores = getPillarScores(ahara, nidra, brahmacharya);
+  const scores = getPillarScores(ahara, nidra, brahmacharya, loggedPillars);
 
   const aharaPct = (scores.ahara / 34) * 100;
   const nidraPct = (scores.nidra / 33) * 100;

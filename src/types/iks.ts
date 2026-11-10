@@ -144,7 +144,7 @@ export interface BrahmaPathBackupPayload {
   /** Complete historical Trayopastambha daily logs */
   sadhanaLogs: TrayopastambhaLog[];
 
-  /** Historical Pause Gate / loop-breaking records (Gita 2.62-63 & YS 2.33) */
+  /** Historical Impulse Interceptor / loop-breaking records (Gita 2.62-63 & YS 2.33) */
   interceptions: InterceptionRecord[];
 
   /** Historical Bhava Compass emotional interactions and reflections (YS 1.33) */

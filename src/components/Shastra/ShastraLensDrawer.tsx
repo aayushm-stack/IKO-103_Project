@@ -28,6 +28,7 @@ const FEATURE_TITLES: Record<string, string> = {
   yukta: 'Bhagavad Gita 6.17 • Balanced Living',
   daily_verse: 'Daily Shloka • Quote of the Day',
   svadhyaya: 'Bhagavad Gita 17.15 • Svādhyāya Pramāṇa',
+  sankalpa: 'Vedic Saṅkalpa & Resolute Intellect (Vyavasāyātmikā Buddhi)',
 };
 
 export const ShastraLensDrawer: React.FC<ShastraLensDrawerProps> = ({
@@ -156,7 +157,7 @@ export const ShastraLensDrawer: React.FC<ShastraLensDrawerProps> = ({
             <ScrollText className="w-3.5 h-3.5 text-amber-700" />
             Scriptural Meaning &amp; Exegesis
           </span>
-          <div className="p-4 rounded-xl bg-white/90 border border-[#E2E8F0] text-sm text-charcoal/90 leading-relaxed">
+          <div className="p-4 rounded-xl bg-white/90 border border-[#E2E8F0] text-sm text-charcoal/90 leading-relaxed whitespace-pre-line">
             <p>{activeMeaning}</p>
           </div>
         </div>
@@ -170,7 +171,7 @@ export const ShastraLensDrawer: React.FC<ShastraLensDrawerProps> = ({
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
               Practical Modern Application
             </span>
-            <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/70 text-xs sm:text-sm text-charcoal/90 leading-relaxed">
+            <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/70 text-xs sm:text-sm text-charcoal/90 leading-relaxed whitespace-pre-line">
               <p>{activeApplication}</p>
             </div>
           </div>

@@ -8,26 +8,25 @@ import {
   Link as LinkIcon,
   Zap,
   RotateCw,
-  Target,
   Shield,
-  HeartHandshake,
   Wind,
   Flame,
-  Droplets,
   Moon,
   BookOpen,
+  RotateCcw,
+  Check,
 } from 'lucide-react';
 import chariotResting from '../../assets/chariot-poses/chariot-resting.png';
 import chariotCalm from '../../assets/chariot-poses/chariot-calm.png';
 import chariotBrisk from '../../assets/chariot-poses/chariot-brisk.png';
 import chariotGalloping from '../../assets/chariot-poses/chariot-galloping.png';
 import { ChariotStatusBadge, ChariotGaitState } from '../Chariot/ChariotHome';
+import { FOUNDATIONAL_SENTINEL_SANKALPA } from '../Onboarding/OnboardingFlow';
 import {
   SentinelGitaQuote,
   getNextSentinelGitaQuote,
-  getSentinelDoshaRemedy,
 } from '../../data/sentinelShastraData';
-import { DoshaType, GunaType } from '../../types/iks';
+import { GunaType } from '../../types/iks';
 
 export interface SentinelDashboardProps {
   className?: string;
@@ -48,13 +47,17 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
   const {
     chariotStatus,
     gunaDistribution,
-    doshaDiagnosis,
     preferences,
+    updatePreferences,
     openShastraLens,
     setActiveView,
   } = useBrahmaPath();
 
   const handleOpenLens = onOpenShastraLens ?? openShastraLens;
+
+  const activeWarriorPledge =
+    preferences?.sankalpa ||
+    FOUNDATIONAL_SENTINEL_SANKALPA;
 
   // ================= 1. CHARIOT / RATHA CALCULATIONS =================
   const rawState = (chariotStatus as any)?.gait || chariotStatus?.state || 'Calm';
@@ -163,33 +166,18 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
 
   const [selectedGuna, setSelectedGuna] = useState<GunaType>(dominantGunaType);
 
-  // ================= 4. TRI-DOSHA STATE =================
-  const activeDominantDosha: DoshaType =
-    (doshaDiagnosis as any)?.dominantDosha || doshaDiagnosis?.aggravatedDosha || 'Vata';
 
-  const [selectedDosha, setSelectedDosha] = useState<DoshaType>(activeDominantDosha);
-
-  const vataPct = doshaDiagnosis?.normalizedPercentages?.vata ?? 33;
-  const pittaPct = doshaDiagnosis?.normalizedPercentages?.pitta ?? 34;
-  const kaphaPct = doshaDiagnosis?.normalizedPercentages?.kapha ?? 33;
-
-  const sentinelDoshaRemedy = useMemo(() => {
-    return getSentinelDoshaRemedy(activeDominantDosha);
-  }, [activeDominantDosha]);
 
   return (
     <div className={`space-y-6 pb-24 ${className}`}>
+
       {/* ============================================================== */}
       {/* CARD 1: KATHA UPANISHAD WAR CHARIOT (RATHA READINESS)        */}
       {/* ============================================================== */}
       <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-5">
-        {/* Top Header with Badge, Title, Subtitle, and Shastra Lens Trigger */}
+        {/* Top Header with Title, Subtitle, and Shastra Lens Trigger */}
         <div className="flex items-center justify-between border-b border-slate-200/90 pb-3.5">
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-emerald-800">
-              <span className="w-2 h-2 rounded-full bg-emerald-700 inline-block" />
-              <span>Katha Upanishad 1.3.3–4 • Battlefield Ratha</span>
-            </div>
+          <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <Compass className="w-5 h-5 text-amber-700 flex-shrink-0" />
               <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
@@ -311,82 +299,106 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
           </div>
         </div>
 
-        {/* 3-Pillar Horizontal Breakdown Bars (No percentage weights shown) */}
-        {normalizedState !== 'Resting' && (
-          <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
-            <h4 className="text-sm sm:text-base font-bold text-slate-900">
-              Composure Score Breakdown
-            </h4>
+        {/* 3-Pillar Horizontal Breakdown Bars with Dynamic Composure Weights */}
+        {normalizedState !== 'Resting' && (() => {
+          const isInterceptorActive = Boolean(chariotStatus?.interceptionStats?.hasActivityToday);
+          const sadhanaWeightBadge = isInterceptorActive ? '50% wt' : '65% wt';
+          const bhavaWeightBadge = isInterceptorActive ? '25% wt' : '35% wt';
+          const prqScore = chariotStatus?.interceptionStats?.prqScore ?? gateScore;
 
-            <div className="space-y-2.5 pt-1">
-              {/* Duty & Tactical Rest (Yukta) */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-slate-700 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
-                    Duty &amp; Tactical Rest
-                  </span>
-                  <span className="font-bold text-slate-900">
-                    {yuktaScore}/100
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
-                  <div
-                    style={{
-                      width: `${Math.min(100, Math.max(0, yuktaScore))}%`,
-                      backgroundColor: '#D97706',
-                    }}
-                    className="h-full rounded-full transition-all duration-500"
-                  />
-                </div>
-              </div>
+          return (
+            <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+              <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                Composure Score Breakdown
+              </h4>
 
-              {/* Impulse & Krodha Restraint (Gate) */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-slate-700 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
-                    Impulse &amp; Krodha Restraint
-                  </span>
-                  <span className="font-bold text-slate-900">
-                    {gateScore}/100
-                  </span>
+              <div className="space-y-2.5 pt-1">
+                {/* Row 1: Duty & Tactical Rest (Daily Sadhana) */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-slate-700 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
+                      Duty &amp; Tactical Rest (Daily Sadhana)
+                    </span>
+                    <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                      <span>{yuktaScore}/100</span>
+                      <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded-md border border-slate-300/60">
+                        {sadhanaWeightBadge}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
+                    <div
+                      style={{
+                        width: `${Math.min(100, Math.max(0, yuktaScore))}%`,
+                        backgroundColor: '#D97706',
+                      }}
+                      className="h-full rounded-full transition-all duration-500"
+                    />
+                  </div>
                 </div>
-                <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
-                  <div
-                    style={{
-                      width: `${Math.min(100, Math.max(0, gateScore))}%`,
-                      backgroundColor: '#D97706',
-                    }}
-                    className="h-full rounded-full transition-all duration-500"
-                  />
-                </div>
-              </div>
 
-              {/* Unit & Homefront Poise (Bhava) */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-slate-700 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
-                    Unit &amp; Homefront Poise
-                  </span>
-                  <span className="font-bold text-slate-900">
-                    {bhavaScore}/100
-                  </span>
+                {/* Row 2: Impulse & Krodha Restraint — Manas */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-slate-700 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
+                      Impulse &amp; Krodha Restraint — Manas
+                    </span>
+                    {isInterceptorActive ? (
+                      <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                        <span>{prqScore}/100</span>
+                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded-md border border-slate-300/60">
+                          25% wt
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 font-medium text-xs">
+                        Standby (Not logged today — 0% wt)
+                      </span>
+                    )}
+                  </div>
+                  <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
+                    <div
+                      style={{
+                        width: isInterceptorActive
+                          ? `${Math.min(100, Math.max(0, prqScore))}%`
+                          : '0%',
+                        backgroundColor: '#D97706',
+                      }}
+                      className="h-full rounded-full transition-all duration-500"
+                    />
+                  </div>
                 </div>
-                <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
-                  <div
-                    style={{
-                      width: `${Math.min(100, Math.max(0, bhavaScore))}%`,
-                      backgroundColor: '#D97706',
-                    }}
-                    className="h-full rounded-full transition-all duration-500"
-                  />
+
+                {/* Row 3: Unit & Homefront Poise — Bhāva Compass */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-slate-700 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
+                      Unit &amp; Homefront Poise — Bhāva Compass
+                    </span>
+                    <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                      <span>{bhavaScore}/100</span>
+                      <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded-md border border-slate-300/60">
+                        {bhavaWeightBadge}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden">
+                    <div
+                      style={{
+                        width: `${Math.min(100, Math.max(0, bhavaScore))}%`,
+                        backgroundColor: '#D97706',
+                      }}
+                      className="h-full rounded-full transition-all duration-500"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* 3 Full-Width Diagnostic Rows Tailored to Sentinel Life */}
         <div className="flex flex-col space-y-3 pt-1">
@@ -433,6 +445,42 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-md">
               {indriyasSummary}
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* FOUNDATIONAL WARRIOR PLEDGE (ABOVE DAILY FIELD DISPATCH)       */}
+      {/* ============================================================== */}
+      <div
+        style={{
+          backgroundColor: '#FFFFFF',
+          borderColor: '#E2E8F0',
+        }}
+        className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs"
+      >
+        <div className="p-4 sm:p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-3">
+          {/* Header Row Inside Grey Box */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                YOUR SANKALPA (INNER PLEDGE)
+              </span>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                The foundational intention you anchored when initiating BrahmaPath.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <ShastraLensButton
+                onClick={() => handleOpenLens('sankalpa')}
+                className="flex-shrink-0"
+              />
+            </div>
+          </div>
+
+          <div className="p-4 bg-white rounded-xl border border-slate-200/90 text-xs sm:text-sm text-slate-700 leading-relaxed font-serif italic">
+            {activeWarriorPledge}
           </div>
         </div>
       </div>
@@ -506,63 +554,6 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
           </p>
         </div>
       </article>
-
-      {/* ============================================================== */}
-      {/* CARD 3: PERSONAL KSHATRA SANKALPA (WARRIOR'S INNER PLEDGE)   */}
-      {/* ============================================================== */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200/90 pb-3.5">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-amber-700 flex-shrink-0" />
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-                Personal Kshatra Sankalpa
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500 font-medium">
-              Warrior&apos;s inner pledge and unshakeable operational resolve
-            </p>
-          </div>
-
-          <ShastraLensButton
-            onClick={() => handleOpenLens('brahmacharya')}
-            className="ml-2 flex-shrink-0"
-          />
-        </div>
-
-        {/* Top Citation Pill */}
-        <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/60 shadow-2xs">
-            <Target className="w-3 h-3 text-[#D97706]" />
-            <span>Bhagavad Gita 2.48 &amp; 6.5 • Frontline Anchor</span>
-          </span>
-        </div>
-
-        {/* Clean Serif Inner Quote Box */}
-        <div className="p-4 sm:p-5 bg-slate-50/90 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3 text-center">
-          <p className="font-serif italic text-base sm:text-lg text-slate-800 leading-relaxed max-w-md mx-auto">
-            “{preferences?.sankalpa?.trim() || 'Stand firm in duty, master the senses, and guard inner stillness as your highest fortress.'}”
-          </p>
-          <div className="flex items-center justify-center gap-2 pt-1">
-            <span className="text-xs font-semibold text-slate-500">
-              Committed Warrior Resolve • {preferences?.name || 'Sentinel'}
-            </span>
-          </div>
-        </div>
-
-        {/* Quick Action Link */}
-        <div className="flex justify-end pt-0.5">
-          <button
-            type="button"
-            onClick={() => setActiveView('sankalpa')}
-            className="text-xs font-bold text-emerald-800 hover:text-emerald-950 inline-flex items-center gap-1 cursor-pointer transition-colors"
-          >
-            <span>Update Kshatra Sankalpa</span>
-            <span>→</span>
-          </button>
-        </div>
-      </div>
 
       {/* ============================================================== */}
       {/* CARD 4: OPERATIONAL TRI-GUNA ENERGY BALANCE                  */}
@@ -701,24 +692,21 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
               </h4>
             </div>
 
-            {/* Percentage Text Labels */}
+            {/* Legend Text Labels */}
             <div className="flex items-center justify-between text-xs font-medium">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-700 inline-block" />
-                <span className="text-slate-700">Sattva (Calm Readiness)</span>
-                <span className="font-bold text-emerald-800">{sattvaPct}%</span>
+                <span className="text-slate-700">Sattva</span>
               </div>
 
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-600 inline-block" />
-                <span className="text-slate-700">Rajas (Vigilance)</span>
-                <span className="font-bold text-amber-800">{rajasPct}%</span>
+                <span className="text-slate-700">Rajas</span>
               </div>
 
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-500 inline-block" />
-                <span className="text-slate-700">Tamas (Fatigue)</span>
-                <span className="font-bold text-slate-700">{tamasPct}%</span>
+                <span className="text-slate-700">Tamas</span>
               </div>
             </div>
 
@@ -730,7 +718,7 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
                   className="bg-emerald-700 h-full transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-white select-none"
                   title={`Sattva: ${sattvaPct}%`}
                 >
-                  {sattvaPct >= 14 && `${sattvaPct}%`}
+                  {sattvaPct >= 8 && `${sattvaPct}%`}
                 </div>
               )}
 
@@ -740,7 +728,7 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
                   className="bg-amber-600 h-full transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-white select-none"
                   title={`Rajas: ${rajasPct}%`}
                 >
-                  {rajasPct >= 14 && `${rajasPct}%`}
+                  {rajasPct >= 8 && `${rajasPct}%`}
                 </div>
               )}
 
@@ -750,7 +738,7 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
                   className="bg-slate-500 h-full transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-white select-none"
                   title={`Tamas: ${tamasPct}%`}
                 >
-                  {tamasPct >= 14 && `${tamasPct}%`}
+                  {tamasPct >= 8 && `${tamasPct}%`}
                 </div>
               )}
             </div>
@@ -767,220 +755,6 @@ export const SentinelDashboard: React.FC<SentinelDashboardProps> = ({
         </div>
       </div>
 
-      {/* ============================================================== */}
-      {/* CARD 5: SHIFT-DUTY TRI-DOSHA BIOLOGICAL RADAR                 */}
-      {/* ============================================================== */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-5">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200/90 pb-3.5">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2">
-              <HeartHandshake className="w-5 h-5 text-amber-700 flex-shrink-0" />
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-                Shift-Duty Tri-Dosha Biological Radar
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500 font-medium">
-              Biological humors under watch rotation &amp; field conditions
-            </p>
-          </div>
-
-          <ShastraLensButton
-            onClick={() => handleOpenLens('tridosha')}
-            className="ml-2 flex-shrink-0"
-          />
-        </div>
-
-        {/* Interactive Dosha Exploration Pills */}
-        <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs">
-          {(
-            [
-              { key: 'Vata', label: 'Vāta' },
-              { key: 'Pitta', label: 'Pitta' },
-              { key: 'Kapha', label: 'Kapha' },
-            ] as const
-          ).map(({ key, label }) => {
-            const isSelected = selectedDosha === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setSelectedDosha(key)}
-                className={`min-h-[44px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer text-center flex items-center justify-center ${
-                  isSelected
-                    ? 'bg-[#D97706] text-white shadow-xs'
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-white/50'
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Selected Content Enclosed in Grey Box */}
-        <div className="p-4 sm:p-5 bg-slate-50/90 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4">
-          {/* Centered State Badges */}
-          <div className="flex flex-col items-center justify-center gap-1.5 pb-1 text-center">
-            <span
-              className={`text-xs font-bold uppercase tracking-wider px-3.5 py-1 rounded-full border flex items-center justify-center gap-1.5 shadow-2xs ${
-                selectedDosha === 'Vata'
-                  ? 'bg-slate-200 text-slate-800 border-slate-300'
-                  : selectedDosha === 'Pitta'
-                  ? 'bg-orange-100 text-amber-900 border-orange-200'
-                  : 'bg-emerald-100 text-emerald-800 border-emerald-200'
-              }`}
-            >
-              {selectedDosha === 'Vata' && <Wind className="w-3.5 h-3.5" />}
-              {selectedDosha === 'Pitta' && <Flame className="w-3.5 h-3.5" />}
-              {selectedDosha === 'Kapha' && <Droplets className="w-3.5 h-3.5" />}
-              {selectedDosha === 'Vata'
-                ? 'Vāta • Watch Alertness & Broken Rest'
-                : selectedDosha === 'Pitta'
-                ? 'Pitta • Command Friction & Stimulant Heat'
-                : 'Kapha • Field Monotony & Bunk Heaviness'}
-            </span>
-            {selectedDosha === activeDominantDosha && (
-              <span className="text-xs font-bold text-amber-900 bg-amber-100/90 px-2.5 py-0.5 rounded-full border border-amber-200 shadow-2xs inline-block">
-                Current Peak Shift Burden
-              </span>
-            )}
-          </div>
-
-          {/* Headline & Description */}
-          <div className="pt-2 space-y-1">
-            <h3
-              className={`font-serif text-lg sm:text-xl font-bold tracking-tight ${
-                selectedDosha === 'Vata'
-                  ? 'text-slate-800'
-                  : selectedDosha === 'Pitta'
-                  ? 'text-amber-800'
-                  : 'text-emerald-800'
-              }`}
-            >
-              {selectedDosha === 'Vata' && 'Elevated Vāta: Kinetic Mobility & Sentry Strain'}
-              {selectedDosha === 'Pitta' && 'Elevated Pitta: Metabolic Intensity & Command Heat'}
-              {selectedDosha === 'Kapha' && 'Elevated Kapha: Somatic Heaviness & Routine Stagnation'}
-            </h3>
-            <p className="text-xs text-slate-500 font-medium">
-              {selectedDosha === 'Vata' && 'Air & Ether • Shift Scrambling, High Cold Exposure, & Nervous Vigilance'}
-              {selectedDosha === 'Pitta' && 'Fire & Water • Operational Friction, Watch Caffeine, & Swallowed Anger'}
-              {selectedDosha === 'Kapha' && 'Earth & Water • Prolonged Routine, Isolation Fatigue, & Slowed Agni'}
-            </p>
-            <p className="text-sm font-medium text-slate-700 mt-1.5 leading-relaxed">
-              {selectedDosha === 'Vata' &&
-                'Your nervous system remains locked in scanning mode after duty. Broken sleep, dry winds, and rapid shift rotations spike Vāta, causing restless bunk rest.'}
-              {selectedDosha === 'Pitta' &&
-                'Internal heat is elevated from duty caffeine, intense focus, or command friction. Excess Pitta sharpens irritability and triggers inflammatory wear.'}
-              {selectedDosha === 'Kapha' &&
-                'Extended garrison routine or monotonous bunker watches produce heavy lethargy, brain fog, and low motivation to initiate physical training.'}
-            </p>
-          </div>
-
-          {/* Actionable Recommendations */}
-          <div className="grid grid-cols-1 gap-2.5 pt-1">
-            <div className="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-start gap-3 shadow-2xs">
-              <span className="text-base select-none">🌿</span>
-              <div className="text-xs text-slate-700 leading-relaxed">
-                <strong className="font-bold text-slate-900">Field Dinacharya: </strong>
-                {selectedDosha === 'Vata' &&
-                  'Sip warm water, keep feet and ears protected from cold winds, and avoid cold rations.'}
-                {selectedDosha === 'Pitta' &&
-                  'Splash cold water on face and temples; reduce watch tea and hot pungent spices.'}
-                {selectedDosha === 'Kapha' &&
-                  'Awaken immediately at alarm; drink black tea spiced with ginger and black pepper.'}
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-start gap-3 shadow-2xs">
-              <span className="text-base select-none">🌬️</span>
-              <div className="text-xs text-slate-700 leading-relaxed">
-                <strong className="font-bold text-slate-900">Tactical Somatic Remedy: </strong>
-                {selectedDosha === 'Vata' &&
-                  'Practice 60 seconds of Kūrma eye-palming in complete darkness before laying down in the bunk.'}
-                {selectedDosha === 'Pitta' &&
-                  'Practice 5 slow extended exhalations (Sheetali / Rechaka) before responding to command tension.'}
-                {selectedDosha === 'Kapha' &&
-                  'Perform 3 minutes of brisk shoulder/spine mobility and check in with your unit buddy.'}
-              </div>
-            </div>
-          </div>
-
-          {/* Tridosha Biological Balance Distribution Section */}
-          <div className="pt-3 border-t border-slate-200/80 space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="font-serif text-sm font-bold text-slate-800">
-                Tridosha Biological Distribution
-              </h4>
-            </div>
-
-            {/* Percentage Text Labels */}
-            <div className="flex items-center justify-between text-xs font-medium">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-slate-500 inline-block" />
-                <span className="text-slate-700">Vāta</span>
-                <span className="font-bold text-slate-700">{vataPct}%</span>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-600 inline-block" />
-                <span className="text-slate-700">Pitta</span>
-                <span className="font-bold text-amber-800">{pittaPct}%</span>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-700 inline-block" />
-                <span className="text-slate-700">Kapha</span>
-                <span className="font-bold text-emerald-800">{kaphaPct}%</span>
-              </div>
-            </div>
-
-            {/* Horizontal Stacked Progress Bar */}
-            <div className="w-full h-4 bg-slate-200/70 rounded-full overflow-hidden flex shadow-inner">
-              {vataPct > 0 && (
-                <div
-                  style={{ width: `${vataPct}%` }}
-                  className="bg-slate-500 h-full transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-white select-none"
-                  title={`Vata: ${vataPct}%`}
-                >
-                  {vataPct >= 14 && `${vataPct}%`}
-                </div>
-              )}
-
-              {pittaPct > 0 && (
-                <div
-                  style={{ width: `${pittaPct}%` }}
-                  className="bg-amber-600 h-full transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-white select-none"
-                  title={`Pitta: ${pittaPct}%`}
-                >
-                  {pittaPct >= 14 && `${pittaPct}%`}
-                </div>
-              )}
-
-              {kaphaPct > 0 && (
-                <div
-                  style={{ width: `${kaphaPct}%` }}
-                  className="bg-emerald-700 h-full transition-all duration-500 flex items-center justify-center text-[10px] font-bold text-white select-none"
-                  title={`Kapha: ${kaphaPct}%`}
-                >
-                  {kaphaPct >= 14 && `${kaphaPct}%`}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Bottom Remedy Box from getSentinelDoshaRemedy */}
-          <div className="p-4 bg-amber-50/70 border border-amber-200/80 rounded-2xl text-amber-950 space-y-1.5 shadow-2xs">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-amber-700" />
-              <span>FIELD BIOLOGICAL COUNTERMEASURE (CHARAKA SAMHITA)</span>
-            </span>
-            <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
-              {sentinelDoshaRemedy}
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

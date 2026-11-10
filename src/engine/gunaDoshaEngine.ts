@@ -34,6 +34,7 @@ export interface DoshaDiagnosisResult {
  * Computes a normalized Tri-Guna distribution (sattva + rajas + tamas === 100)
  * reflecting recent behavioral patterns across nourishment, sleep, vital focus, urge loops,
  * and emotional friction/buffering from the Bhāva Compass.
+ * Smoothly reactive to continuous slider adjustments.
  * Supports optional Sentinel telemetry when present.
  */
 export function calculateGunaDistribution(
@@ -88,17 +89,25 @@ export function calculateGunaDistribution(
         rajasWeight += 6;
       }
 
-      // Sensory mindfulness & digital intake (Self-Anchored Relative Model)
-      sattvaWeight += (log.ahara.sensoryMindfulnessScore || 0) * 3;
-      const baselineMins = log.ahara.baselineMinutesAtLog ?? 360;
-      if (log.ahara.digitalConsumptionMinutes > baselineMins * 1.125) {
-        rajasWeight += 10;
-        tamasWeight += 6;
-      } else if (log.ahara.digitalConsumptionMinutes > baselineMins * 0.85) {
-        rajasWeight += 5;
-        sattvaWeight += 3;
+      // Sensory mindfulness slider (1-5) - continuous smooth deltas
+      const mindful = Math.max(1, Math.min(5, log.ahara.sensoryMindfulnessScore || 1));
+      sattvaWeight += (mindful - 1) * 3; // 0, 3, 6, 9, 12
+      rajasWeight += Math.max(0, (5 - mindful) * 1.5); // 6, 4.5, 3, 1.5, 0
+
+      // Screen time (digitalConsumptionMinutes) - continuous relative model
+      const baselineMins = Math.max(60, log.ahara.baselineMinutesAtLog ?? 360);
+      const digitalMins = Math.max(0, log.ahara.digitalConsumptionMinutes || 0);
+      const r = digitalMins / baselineMins;
+      if (r <= 0.75) {
+        sattvaWeight += Math.round(10 - 2.5 * r);
+        rajasWeight += Math.round(2 + 2 * r);
+      } else if (r <= 1.0) {
+        sattvaWeight += Math.max(2, Math.round(8 - 8 * (r - 0.75)));
+        rajasWeight += Math.round(4 + 8 * (r - 0.75));
       } else {
-        sattvaWeight += 8;
+        sattvaWeight += Math.max(0, Math.round(2 - 4 * (r - 1.0)));
+        rajasWeight += Math.round(6 + 6 * Math.min(1.5, r - 1.0));
+        tamasWeight += Math.round(3 + 8 * Math.min(1.5, r - 1.0));
       }
     }
 
@@ -106,7 +115,7 @@ export function calculateGunaDistribution(
     if (hasNidra && log.nidra) {
       if (log.nidra.restQuality === 'Restorative') {
         sattvaWeight += 12;
-      } else if (log.nidra.restQuality === 'Disturbed') {
+      } else if (log.nidra.restQuality === 'Disturbed' || (log.nidra.restQuality as string) === 'Fragmented') {
         rajasWeight += 12;
       } else {
         tamasWeight += 14;
@@ -118,12 +127,16 @@ export function calculateGunaDistribution(
         rajasWeight += 5;
       }
 
-      if (log.nidra.hoursSlept >= 7 && log.nidra.hoursSlept <= 8.5) {
-        sattvaWeight += 8;
-      } else if (log.nidra.hoursSlept < 6) {
-        rajasWeight += 8;
-      } else if (log.nidra.hoursSlept > 9) {
-        tamasWeight += 8;
+      // Hours slept continuous slider (0-12h, step 0.5)
+      const h = Math.max(0, log.nidra.hoursSlept || 0);
+      if (h <= 7.5) {
+        sattvaWeight += Math.round((h / 7.5) * 10);
+        rajasWeight += Math.max(0, Math.round((7.5 - h) * 1.6));
+      } else if (h <= 8.5) {
+        sattvaWeight += 10;
+      } else {
+        sattvaWeight += Math.max(3, Math.round(10 - (h - 8.5) * 1.5));
+        tamasWeight += Math.round(Math.min(12, (h - 8.5) * 2.5));
       }
 
       // Sentinel telemetry: watchRestProtocol
@@ -137,8 +150,26 @@ export function calculateGunaDistribution(
 
     // Brahmacharya (Energy conservation & deep work)
     if (hasBrahmacharya && log.brahmacharya) {
-      sattvaWeight += (log.brahmacharya.energyConservationRating || 0) * 3;
-      sattvaWeight += Math.min((log.brahmacharya.focusedStudyBlocks || 0) * 3, 15);
+      // Energy conservation continuous slider (1-5)
+      const energy = Math.max(
+        1,
+        Math.min(
+          5,
+          (log.brahmacharya as any).energyConservationScore ??
+            log.brahmacharya.energyConservationRating ??
+            1
+        )
+      );
+      sattvaWeight += (energy - 1) * 3; // 0, 3, 6, 9, 12
+      rajasWeight += Math.max(0, (5 - energy) * 2); // 8, 6, 4, 2, 0
+      if (energy <= 2) {
+        tamasWeight += (3 - energy) * 2;
+      }
+
+      // Focus sessions / blocks continuous slider
+      const blocks = Math.max(0, log.brahmacharya.focusedStudyBlocks || 0);
+      sattvaWeight += Math.min(14, Math.round(blocks * 2.2));
+      rajasWeight += Math.max(0, Math.round((4 - blocks) * 1.5));
 
       if (log.brahmacharya.dominantGuna === 'Sattva') {
         sattvaWeight += 10;
@@ -151,6 +182,9 @@ export function calculateGunaDistribution(
       // Sentinel telemetry: sahyogCohesion
       if (log.brahmacharya.sahyogCohesion === 'sahyog_connected') {
         sattvaWeight += 6;
+      }
+      if (log.brahmacharya.sahyogCohesion === 'command_friction') {
+        rajasWeight += 6;
       }
       if (log.brahmacharya.sahyogCohesion === 'barracks_isolated') {
         tamasWeight += 8;
@@ -198,7 +232,7 @@ export function calculateGunaDistribution(
     }
   }
 
-  // 3. Step 4: Evaluate recent bhavaLogs (chronologically sorted descending, taking recent 10)
+  // 3. Evaluate recent bhavaLogs (chronologically sorted descending, taking recent 10)
   const recentBhavas = [...safeBhavaLogs]
     .sort((a, b) => {
       const timeA = new Date(a.timestamp).getTime() || 0;
@@ -285,9 +319,11 @@ export function diagnoseDoshaImbalance(
   const safeInterceptions = Array.isArray(interceptions) ? interceptions : [interceptions];
   const safeBhavaLogs = Array.isArray(bhavaLogs) ? bhavaLogs : [bhavaLogs];
 
-  let vataScore = 0;
-  let pittaScore = 0;
-  let kaphaScore = 0;
+  // Sama-Dosha constitutional equilibrium baseline (Charaka Samhita Sutrasthana 1.55)
+  // Ensures that minor isolated points do not artificially polarize a single humor to 100%
+  let vataScore = 12;
+  let pittaScore = 12;
+  let kaphaScore = 12;
 
   // 1. Evaluate lifestyle & physiological signals from logs (recent 7 days)
   const recentLogs = [...safeLogs]
@@ -307,21 +343,23 @@ export function diagnoseDoshaImbalance(
 
     // 1. Ahara signals
     if (hasAhara && log.ahara) {
-      // High screen time (Self-Anchored Relative Model)
-      if (typeof log.ahara.digitalConsumptionMinutes === 'number') {
-        const baselineMins = log.ahara.baselineMinutesAtLog ?? 360;
-        if (log.ahara.digitalConsumptionMinutes > baselineMins * 1.05) {
-          const excessIntervals = Math.floor((log.ahara.digitalConsumptionMinutes - baselineMins) / 30) + 1;
-          vataScore += 20 + excessIntervals * 10;
-        }
+      // Screen time continuous response on Vata (Self-Anchored Relative Model)
+      const baselineMins = Math.max(60, log.ahara.baselineMinutesAtLog ?? 360);
+      const digitalMins = Math.max(0, log.ahara.digitalConsumptionMinutes || 0);
+      const r = digitalMins / baselineMins;
+      if (r > 0.75) {
+        vataScore += Math.round((r - 0.75) * 35);
       }
 
-      // Tamasic nutrition
+      // Sensory mindfulness continuous effect
+      const mindful = Math.max(1, Math.min(5, log.ahara.sensoryMindfulnessScore || 1));
+      vataScore += Math.round((5 - mindful) * 4);
+      pittaScore += Math.round((5 - mindful) * 2);
+
+      // Nutritional quality
       if (log.ahara.nutritionQuality === 'Tamasic') {
         kaphaScore += 35;
       }
-
-      // Supporting heating signals for Pitta
       if (log.ahara.nutritionQuality === 'Rajasic') {
         pittaScore += 10;
       }
@@ -335,23 +373,22 @@ export function diagnoseDoshaImbalance(
 
     // 2. Nidra signals
     if (hasNidra && log.nidra) {
-      // Irregular sleep (inconsistent bedtime schedule, disturbed rest quality, or <6 hours)
       if (log.nidra.bedtimeConsistency === false) {
         vataScore += 20;
       }
-      if (log.nidra.restQuality === 'Disturbed') {
+      if (log.nidra.restQuality === 'Disturbed' || (log.nidra.restQuality as string) === 'Fragmented') {
         vataScore += 20;
       }
-      if (typeof log.nidra.hoursSlept === 'number' && log.nidra.hoursSlept < 6) {
-        vataScore += 15;
-      }
 
-      // --- KAPHA SPIKES ---
-      // >9 hours of sleep
-      if (typeof log.nidra.hoursSlept === 'number' && log.nidra.hoursSlept > 9) {
-        kaphaScore += 35;
+      // Sleep hours continuous slider
+      const h = Math.max(0, log.nidra.hoursSlept || 0);
+      if (h < 7.5) {
+        vataScore += Math.round((7.5 - h) * 6);
       }
-      if (log.nidra.restQuality === 'Lethargic') {
+      if (h > 8.0) {
+        kaphaScore += Math.round((h - 8.0) * 8);
+      }
+      if (log.nidra.restQuality === 'Lethargic' || (log.nidra.restQuality as string) === 'Depleted') {
         kaphaScore += 20;
       }
 
@@ -363,6 +400,27 @@ export function diagnoseDoshaImbalance(
 
     // 3. Brahmacharya signals
     if (hasBrahmacharya && log.brahmacharya) {
+      // Energy conservation continuous slider (1-5)
+      const energy = Math.max(
+        1,
+        Math.min(
+          5,
+          (log.brahmacharya as any).energyConservationScore ??
+            log.brahmacharya.energyConservationRating ??
+            1
+        )
+      );
+      vataScore += (5 - energy) * 4;
+      pittaScore += Math.max(0, (3 - energy) * 3);
+
+      // Focused blocks continuous slider
+      const blocks = Math.max(0, log.brahmacharya.focusedStudyBlocks || 0);
+      if (blocks < 4) {
+        vataScore += Math.round((4 - blocks) * 3);
+      } else if (blocks > 6) {
+        pittaScore += Math.round((blocks - 6) * 3);
+      }
+
       if (log.brahmacharya.dominantGuna === 'Rajas') {
         pittaScore += 10;
       }
@@ -371,6 +429,9 @@ export function diagnoseDoshaImbalance(
       if (log.brahmacharya.sahyogCohesion === 'barracks_isolated') {
         kaphaScore += 14;
         vataScore += 8;
+      }
+      if (log.brahmacharya.sahyogCohesion === 'command_friction') {
+        pittaScore += 12;
       }
     }
 
@@ -487,7 +548,7 @@ export function diagnoseDoshaImbalance(
       bhava.isResolved === true ||
       bhava.interactionType === 'resolved_negative_friction';
 
-    // If bhava.isPositive or bhava.isResolved, skip Dosha spike (or gently reduce acute aggravation)
+    // If bhava.isPositive or bhava.isResolved, skip Dosha spike
     if (isPos || isRes) {
       continue;
     }
@@ -495,27 +556,17 @@ export function diagnoseDoshaImbalance(
     // Active unresolved emotional friction (!bhava.isPositive && !bhava.isResolved)
     const key = (bhava.cardId || bhava.title || '').toLowerCase();
 
-    // If key.includes('envy') || key.includes('toxic') || key.includes('unfair'): add pittaScore += 35 (competitive envy and hostility overheat Pitta)
     if (key.includes('envy') || key.includes('toxic') || key.includes('unfair')) {
       pittaScore += 35;
     }
 
-    // If key.includes('imposter') || key.includes('overwhelm') || key.includes('doubt'): add vataScore += 35 (anxiety and paralysis destabilize Vata)
     if (key.includes('imposter') || key.includes('overwhelm') || key.includes('doubt')) {
       vataScore += 35;
     }
 
-    // If key.includes('isolation') || key.includes('loneliness'): add kaphaScore += 30 (heavy withdrawal increases Kapha stagnation)
     if (key.includes('isolation') || key.includes('loneliness')) {
       kaphaScore += 30;
     }
-  }
-
-  // Natural balanced baseline if no severe disruptions are recorded yet
-  if (vataScore === 0 && pittaScore === 0 && kaphaScore === 0) {
-    vataScore = 10;
-    pittaScore = 10;
-    kaphaScore = 10;
   }
 
   // 4. Normalize these to equal strictly 100%

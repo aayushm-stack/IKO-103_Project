@@ -79,7 +79,7 @@ export function pruneInterceptions(records: InterceptionRecord[]): InterceptionR
 }
 
 /**
- * Custom React hook for logging and managing Pause Gate interception records.
+ * Custom React hook for logging and managing Impulse Interceptor interception records.
  * Fully offline-capable, syncs with local storage, and automatically prunes records
  * outside the 7-day rolling window to prevent data accumulation bugs.
  * Never seeds fake demo data into empty localStorage for new users.
@@ -244,7 +244,7 @@ export function useInterceptorLogs() {
   );
 
   /**
-   * Returns the total number of Pause Gate interceptions triggered today,
+   * Returns the total number of Impulse Interceptor interceptions triggered today,
    * matching against the local calendar date to support late-night sessions.
    */
   const getTodayInterceptionCount = useCallback((): number => {

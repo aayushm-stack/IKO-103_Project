@@ -56,6 +56,8 @@ export const GITA_CASCADE_SEVEN_STEPS: CascadeStep[] = [
 export interface CascadeVisualizerProps {
   /** Optional active step index (1-7), defaults to 3 (Kama / Craving) */
   activeStep?: number;
+  /** Optional urge intensity (1-5) mapped to step index */
+  intensity?: number;
   className?: string;
   onOpenShastra?: () => void;
   /** Whether to render the internal card header. Set false when embedded in a parent card. */
@@ -70,11 +72,13 @@ export interface CascadeVisualizerProps {
  * warm trail for preceding steps, and displays a dynamic multi-tier diagnostic banner.
  */
 export const CascadeVisualizer: React.FC<CascadeVisualizerProps> = ({
-  activeStep = 3,
+  activeStep,
+  intensity,
   className = '',
   onOpenShastra,
   showHeader = true,
 }) => {
+  const effectiveStep = activeStep ?? (intensity ? Math.min(Math.max(intensity + 1, 1), 7) : 3);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const activeCardRef = useRef<HTMLDivElement | null>(null);
 
@@ -89,19 +93,19 @@ export const CascadeVisualizer: React.FC<CascadeVisualizerProps> = ({
         behavior: 'smooth',
       });
     }
-  }, [activeStep]);
+  }, [effectiveStep]);
 
   // Find active step data
   const currentStep = useMemo(() => {
     return (
-      GITA_CASCADE_SEVEN_STEPS.find((s) => s.stepNumber === activeStep) ??
+      GITA_CASCADE_SEVEN_STEPS.find((s) => s.stepNumber === effectiveStep) ??
       GITA_CASCADE_SEVEN_STEPS[2]
     );
-  }, [activeStep]);
+  }, [effectiveStep]);
 
   // Compute dynamic diagnostic banner content across 3 severity tiers
   const tierConfig = useMemo(() => {
-    if (activeStep <= 2) {
+    if (effectiveStep <= 2) {
       return {
         containerClass: 'bg-emerald-50 text-emerald-900 border-emerald-200',
         iconBg: 'bg-emerald-200 text-emerald-800',
@@ -111,7 +115,7 @@ export const CascadeVisualizer: React.FC<CascadeVisualizerProps> = ({
         message: `You are at Step ${currentStep.stepNumber}: ${currentStep.name} (${currentStep.sanskrit.split(' ')[0]}). The sensory loop is only a surface ripple. A single conscious breath right now effortlessly dissolves the attachment.`,
       };
     }
-    if (activeStep === 3 || activeStep === 4) {
+    if (effectiveStep === 3 || effectiveStep === 4) {
       return {
         containerClass: 'bg-amber-50 text-amber-950 border-amber-200',
         iconBg: 'bg-amber-200 text-amber-800',
@@ -152,8 +156,8 @@ export const CascadeVisualizer: React.FC<CascadeVisualizerProps> = ({
       <div ref={scrollContainerRef} className="w-full overflow-x-auto pb-2 pt-1 scroll-smooth">
         <div className="flex items-stretch gap-3 min-w-max pr-2">
           {GITA_CASCADE_SEVEN_STEPS.map((step) => {
-            const isTargetActive = step.stepNumber === activeStep;
-            const isPastStep = step.stepNumber < activeStep;
+            const isTargetActive = step.stepNumber === effectiveStep;
+            const isPastStep = step.stepNumber < effectiveStep;
 
             return (
               <div

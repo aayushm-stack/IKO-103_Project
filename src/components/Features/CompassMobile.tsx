@@ -2,19 +2,52 @@ import React, { useState } from 'react';
 import { ShastraLensButton } from '../Shastra/ShastraLensButton';
 import { useBrahmaPath } from '../../context/BrahmaPathContext';
 import { BhavaCardData } from '../../types/iks';
-import { BHAVA_CARDS } from '../../engine/bhavaEngine';
-import { Compass, ChevronDown, CheckCircle2, Sparkles, AlertTriangle } from 'lucide-react';
+import { LifeRhythmBar } from '../Chariot/LifeRhythmBar';
+import {
+  SEEKER_BHAVA_CARDS,
+  SeekerPositiveBuffer,
+  SeekerNegativeFriction,
+} from '../../data/seekerShastraData';
+import { LifeRhythm } from '../../types/shastra';
+import {
+  Compass,
+  ChevronDown,
+  CheckCircle2,
+  Sparkles,
+  AlertTriangle,
+  Check,
+} from 'lucide-react';
 
-export { BHAVA_CARDS };
+import { BHAVA_CARDS } from '../../engine/bhavaEngine';
+
+export { BHAVA_CARDS, SEEKER_BHAVA_CARDS };
 
 export interface CompassMobileProps {
   className?: string;
 }
 
+const toPositiveCardData = (c: SeekerPositiveBuffer): BhavaCardData => ({
+  id: c.id,
+  title: c.title,
+  sanskritTrait: c.badge,
+  isPositive: true,
+  appreciationMessage: c.note,
+});
+
+const toNegativeCardData = (c: SeekerNegativeFriction): BhavaCardData => ({
+  id: c.id,
+  title: c.title,
+  sanskritTrait: c.badge,
+  isPositive: false,
+  explanationText: c.reflection,
+  actionSteps: c.steps,
+});
+
 /**
- * Mobile-first Bhāva Compass (Yoga Sutra 1.33 Chitta Prasādanam).
- * Interactive accordion of 8 Bhāva cards with positive appreciation buffers
- * and resolvable negative friction antidotes directly wired to BrahmaPathContext.
+ * Mobile-first Seeker Bhāva Compass (Yoga Sutra 1.33 Chitta Prasādanam).
+ * Fully rhythm-adaptive emotional equilibrium tool for Stage 1.
+ * Dynamically renders 3 Positive Buffer and 5 Negative Friction cards
+ * tailored to Learning & Study, Work & Enterprise, or Home & Quiet Living.
  */
 export const CompassMobile: React.FC<CompassMobileProps> = ({ className = '' }) => {
   const {
@@ -25,9 +58,14 @@ export const CompassMobile: React.FC<CompassMobileProps> = ({ className = '' }) 
     toggleNegativeBhavaResolution,
     clearBhavaCardToday,
     chariotStatus,
+    preferences,
   } = useBrahmaPath();
 
+  const rhythm: LifeRhythm = preferences?.lifeRhythm ?? 'learning_study';
+  const cardSet = SEEKER_BHAVA_CARDS[rhythm] ?? SEEKER_BHAVA_CARDS.learning_study;
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [checkedSteps, setCheckedSteps] = useState<Record<string, boolean>>({});
 
   // Compute live telemetry counts from todayBhavaLogs
   const positiveCount =
@@ -46,299 +84,418 @@ export const CompassMobile: React.FC<CompassMobileProps> = ({ className = '' }) 
     setExpandedId((prev) => (prev === cardId ? null : cardId));
   };
 
+  const toggleStepCheck = (stepKey: string) => {
+    setCheckedSteps((prev) => ({
+      ...prev,
+      [stepKey]: !prev[stepKey],
+    }));
+  };
+
   return (
-    <div
-      style={{
-        backgroundColor: '#FFFFFF',
-        borderColor: '#E2E8F0',
-      }}
-      className={`p-5 sm:p-6 rounded-3xl border shadow-xs overflow-y-auto pb-12 space-y-6 ${className}`}
-    >
-      {/* Header with Title and Shastra Lens Trigger */}
-      <div className="flex items-center justify-between border-b border-slate-200/90 pb-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Compass className="w-5 h-5 text-indigo-700 flex-shrink-0 animate-spin-slow" />
-            <h2 className="text-base sm:text-lg font-bold text-slate-900">
-              Bhāva Compass
-            </h2>
+    <div className={`w-full space-y-6 ${className}`}>
+      {/* Top Life Rhythm Switcher */}
+      <LifeRhythmBar />
+
+      {/* Main Master Card */}
+      <div
+        style={{
+          backgroundColor: '#FFFFFF',
+          borderColor: '#E2E8F0',
+        }}
+        className="p-5 sm:p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-6"
+      >
+        {/* Header with Title, Badge, and Shastra Lens Trigger */}
+        <div className="flex items-center justify-between border-b border-slate-200/90 pb-4">
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <Compass className="w-5 h-5 text-emerald-800 flex-shrink-0 animate-spin-slow" />
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                Bhāva Compass
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+              Restore inner serenity and emotional poise through the four classical attitudes.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 font-medium">
-            Restore inner serenity through the four classical attitudes
-          </p>
+
+          {openShastraLens && (
+            <ShastraLensButton
+              onClick={() => openShastraLens('chitta_prasadanam')}
+              className="ml-2 flex-shrink-0"
+            />
+          )}
         </div>
 
-        {openShastraLens && (
-          <ShastraLensButton
-            onClick={() => openShastraLens('chitta_prasadanam')}
-            className="ml-2 flex-shrink-0"
-          />
-        )}
-      </div>
+        {/* 3-Column Live Bhāva Telemetry Strip */}
+        <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3 grid grid-cols-3 gap-2 text-center text-xs shadow-2xs">
+          <div className="space-y-0.5">
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
+              Net Balance
+            </span>
+            <span className="font-extrabold text-emerald-800 font-mono text-sm sm:text-base">
+              {chariotStatus?.bhavaScore ?? 0} of 100
+            </span>
+          </div>
 
-      {/* 2-Cell Live Bhāva Telemetry Strip */}
-      <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3 grid grid-cols-2 gap-2 text-center text-xs shadow-2xs">
-        <div className="space-y-0.5">
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
-            Bhāva Score
-          </span>
-          <span className="font-extrabold text-slate-900 font-mono text-xs sm:text-sm">
-            {chariotStatus?.bhavaScore ?? 0}/100
-          </span>
+          <div className="space-y-0.5 border-l border-slate-200/80 pl-2">
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
+              Positive Buffers
+            </span>
+            <span className="font-extrabold text-slate-900 font-mono text-sm sm:text-base">
+              {positiveCount} Logged
+            </span>
+          </div>
+
+          <div className="space-y-0.5 border-l border-slate-200/80 pl-2">
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
+              Resolved Frictions
+            </span>
+            <span className="font-extrabold text-emerald-700 font-mono text-sm sm:text-base">
+              {totalNegCount === 0 ? '0 Logged' : `${resolvedNegCount} of ${totalNegCount} Resolved`}
+            </span>
+          </div>
         </div>
 
-        <div className="space-y-0.5 border-l border-slate-200/80 pl-2">
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
-            Harmonized Bhāvas
-          </span>
-          <span className="font-extrabold text-emerald-700 font-mono text-xs sm:text-sm">
-            {(todayBhavaLogs || []).length === 0
-              ? '0 Logged'
-              : `${positiveCount + resolvedNegCount} / ${todayBhavaLogs.length} Harmonized`}
-          </span>
-        </div>
-      </div>
+        {/* Accordions Container */}
+        <div className="space-y-6">
+          {/* SECTION 1: 3 POSITIVE BUFFER ACCORDION CARDS (+20 Bhāva Surplus each) */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 px-1">
+              <Sparkles className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                Positive Buffers (+20 Surplus Each)
+              </h3>
+            </div>
 
-      {/* Accordion List for the 8 BHAVA_CARDS */}
-      <div className="space-y-3">
-        {BHAVA_CARDS.map((card) => {
-          const isExpanded = expandedId === card.id;
+            <div className="space-y-3">
+              {cardSet.positive.map((card) => {
+                const isExpanded = expandedId === card.id;
+                const positiveLoggedItem = todayBhavaLogs?.find(
+                  (l) =>
+                    (l.cardId === card.id || l.id === card.id) &&
+                    (l.isPositive || l.interactionType === 'positive_buffer')
+                );
+                const isPositiveActive = Boolean(positiveLoggedItem);
+                const cardData = toPositiveCardData(card);
 
-          // Check positive log status
-          const positiveLoggedItem = card.isPositive
-            ? todayBhavaLogs?.find(
-                (l) =>
-                  (l.cardId === card.id || l.id === card.id) &&
-                  (l.isPositive || l.interactionType === 'positive_buffer')
-              )
-            : undefined;
-          const isPositiveActive = Boolean(positiveLoggedItem);
-
-          // Check negative log status
-          const negativeLoggedItem = !card.isPositive
-            ? todayBhavaLogs?.find(
-                (l) =>
-                  (l.cardId === card.id || l.id === card.id) &&
-                  !l.isPositive &&
-                  l.interactionType !== 'positive_buffer'
-              )
-            : undefined;
-          const isEncountered = Boolean(negativeLoggedItem);
-          const isCardResolved = Boolean(negativeLoggedItem?.isResolved);
-
-          return (
-            <div
-              key={card.id}
-              className={`rounded-2xl border transition-all duration-300 shadow-2xs ${
-                isExpanded
-                  ? card.isPositive
-                    ? isPositiveActive
-                      ? 'border-emerald-400 bg-emerald-50/20 shadow-xs'
-                      : 'border-green-300 bg-green-50/20 shadow-xs'
-                    : isEncountered && isCardResolved
-                      ? 'border-emerald-400 bg-emerald-50/20 shadow-xs'
-                      : isEncountered
-                        ? 'border-amber-400 bg-amber-50/20 shadow-xs'
-                        : 'border-orange-300 bg-orange-50/20 shadow-xs'
-                  : 'border-slate-200 bg-white hover:border-slate-300'
-              }`}
-            >
-              {/* Accordion Card Header / Toggle Button */}
-              <button
-                type="button"
-                onClick={() => handleToggleExpand(card.id)}
-                className="w-full flex items-center justify-between p-4 text-left cursor-pointer focus:outline-none"
-                aria-expanded={isExpanded}
-              >
-                <div className="flex flex-col space-y-1 pr-3 min-w-0 flex-1">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug tracking-tight">
-                    {card.title}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium">
-                    {card.sanskritTrait}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                  {/* Status Badge */}
-                  {card.isPositive ? (
-                    isPositiveActive ? (
-                      <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-2xs">
-                        Buffer Logged
-                      </span>
-                    ) : (
-                      <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
-                        Positive Buffer
-                      </span>
-                    )
-                  ) : isEncountered && !isCardResolved ? (
-                    <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs">
-                      Unresolved Friction
-                    </span>
-                  ) : isEncountered && isCardResolved ? (
-                    <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
-                      Resolved
-                    </span>
-                  ) : (
-                    <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-orange-100 text-orange-900 border border-orange-200 shadow-2xs">
-                      Negative Friction
-                    </span>
-                  )}
-
-                  <ChevronDown
-                    className={`w-4 h-4 text-slate-400 transition-transform duration-300 ease-in-out ${
+                return (
+                  <div
+                    key={card.id}
+                    className={`rounded-2xl border transition-all duration-300 shadow-2xs ${
                       isExpanded
-                        ? card.isPositive
-                          ? 'rotate-180 text-emerald-700'
-                          : 'rotate-180 text-orange-700'
-                        : ''
+                        ? isPositiveActive
+                          ? 'border-emerald-400 bg-emerald-50/20 shadow-xs'
+                          : 'border-green-300 bg-green-50/20 shadow-xs'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
-                  />
-                </div>
-              </button>
+                  >
+                    {/* Accordion Card Header */}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleExpand(card.id)}
+                      className="w-full flex items-center justify-between p-4 text-left cursor-pointer focus:outline-none"
+                      aria-expanded={isExpanded}
+                    >
+                      <div className="flex flex-col space-y-1 pr-3 min-w-0 flex-1">
+                        <h4 className="text-sm sm:text-base font-bold text-slate-900 leading-snug tracking-tight">
+                          {card.title}
+                        </h4>
+                        <p className="text-xs text-slate-500 font-medium">
+                          {card.badge}
+                        </p>
+                      </div>
 
-              {/* Accordion Content Shell with Smooth Max-Height Animation */}
-              <div
-                className={`transition-all duration-500 ease-in-out overflow-hidden ${
-                  isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                }`}
-              >
-                <div className="p-4 pt-2 pb-5 border-t border-slate-100/90">
-                  {/* POSITIVE CARD: Appreciation message and Action Button */}
-                  {card.isPositive && (
-                    <div className="space-y-3">
-                      {card.appreciationMessage && (
-                        <div className="bg-green-50/90 border border-green-200/90 rounded-2xl p-4 sm:p-5 text-green-900 shadow-2xs space-y-2">
-                          <div className="flex items-center gap-2 text-green-800 font-bold text-xs uppercase tracking-wider">
-                            <Sparkles className="w-3.5 h-3.5 text-green-600" />
-                            <span>Appreciation & Inner Serenity</span>
-                          </div>
-                          <p className="text-xs sm:text-sm leading-relaxed text-green-800 font-serif italic">
-                            &ldquo;{card.appreciationMessage}&rdquo;
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Full-width action button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          togglePositiveBhava(card);
-                        }}
-                        className={`w-full py-3 px-4 rounded-xl shadow-xs transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.99] ${
-                          isPositiveActive
-                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500 ring-2 ring-emerald-500/20'
-                            : 'bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm'
-                        }`}
-                      >
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                         {isPositiveActive ? (
-                          <>
-                            <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />
-                            <div className="flex flex-col text-center leading-tight">
-                              <span className="font-bold text-xs sm:text-sm">Positive Buffer Logged</span>
-                              <span className="text-[10px] sm:text-[11px] font-normal text-emerald-100">Tap to undo</span>
-                            </div>
-                          </>
+                          <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-2xs">
+                            Buffer Logged (+20)
+                          </span>
                         ) : (
-                          <>
-                            <CheckCircle2 className="w-4 h-4 text-emerald-200 flex-shrink-0" />
-                            <span>Log Positive Buffer</span>
-                          </>
+                          <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+                            Positive Buffer
+                          </span>
                         )}
-                      </button>
-                    </div>
-                  )}
 
-                  {/* NEGATIVE CARD: Explanation, Action Steps, and Controls */}
-                  {!card.isPositive && (
-                    <div className="space-y-4 pt-1">
-                      {/* Explanation of what they are experiencing */}
-                      {card.explanationText && (
-                        <div className="space-y-1.5">
-                          <h4 className="text-[11px] uppercase tracking-wider font-bold text-slate-500">
-                            What you are experiencing:
-                          </h4>
-                          <div className="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
-                            {card.explanationText}
-                          </div>
+                        <ChevronDown
+                          className={`w-4 h-4 text-slate-400 transition-transform duration-300 ease-in-out ${
+                            isExpanded ? 'rotate-180 text-emerald-700' : ''
+                          }`}
+                        />
+                      </div>
+                    </button>
+
+                    {/* Accordion Content */}
+                    <div
+                      className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                        isExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="p-4 pt-1 pb-5 border-t border-slate-100/90 space-y-3.5">
+                        <div className="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-100 text-xs text-emerald-950 leading-relaxed font-medium">
+                          {card.note}
                         </div>
-                      )}
 
-                      {/* Action Steps Bulleted List */}
-                      {card.actionSteps && card.actionSteps.length > 0 && (
-                        <div className="space-y-2">
-                          <h4 className="text-[11px] uppercase tracking-wider font-bold text-slate-500">
-                            Actionable Antidotes:
-                          </h4>
-                          <ul className="space-y-2">
-                            {card.actionSteps.map((step, idx) => (
-                              <li
-                                key={idx}
-                                className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 bg-white border border-slate-200/90 rounded-xl p-3 shadow-2xs"
-                              >
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#C85A32] mt-1.5 flex-shrink-0" />
-                                <span className="leading-relaxed">{step}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {/* Explicit Negative Card Controls */}
-                      {!isEncountered && (
-                        // Case 1: Card is expanded for reading, not yet logged today
-                        <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              logNegativeBhavaEncounter(card);
-                            }}
-                            className="flex-1 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] bg-amber-600 hover:bg-amber-700 text-white"
-                          >
-                            <AlertTriangle className="w-4 h-4 text-white" />
-                            <span>I Am Experiencing This Friction</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleNegativeBhavaResolution(card);
-                            }}
-                            className="flex-1 py-3 px-4 rounded-xl shadow-xs transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] bg-[#C85A32] hover:bg-[#B24D28] text-white"
-                          >
-                            <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            togglePositiveBhava(cardData);
+                          }}
+                          className={`w-full py-3 px-4 rounded-xl shadow-xs transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.99] ${
+                            isPositiveActive
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500 ring-2 ring-emerald-500/20'
+                              : 'bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm'
+                          }`}
+                        >
+                          <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />
+                          {isPositiveActive ? (
                             <div className="flex flex-col text-center leading-tight">
-                              <span className="font-bold text-xs sm:text-sm">Practiced Antidote</span>
-                              <span className="text-[10px] sm:text-[11px] font-normal text-amber-100">Mark resolved</span>
+                              <span className="font-bold text-xs sm:text-sm">
+                                ✓ Buffer Active Today (+20 Surplus)
+                              </span>
+                              <span className="text-[10px] sm:text-[11px] font-normal text-emerald-100">
+                                Tap to undo
+                              </span>
                             </div>
-                          </button>
-                        </div>
-                      )}
+                          ) : (
+                            <span>Log Positive Buffer (+20 Surplus)</span>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
-                      {isEncountered && !isCardResolved && (
-                        // Case 2: Currently experiencing unresolved friction
-                        <div className="space-y-3 pt-1">
-                          <div className="bg-amber-50 border border-amber-200/90 rounded-xl p-3 text-xs text-amber-900 leading-relaxed flex items-start gap-2 shadow-2xs">
-                            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                            <span>
-                              Active Unresolved Friction — Pulling Composure Score down. Practice the antidotes above, then mark resolved.
+          {/* SECTION 2: 5 NEGATIVE FRICTION ACCORDION CARDS */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center gap-2 px-1">
+              <AlertTriangle className="w-4 h-4 text-amber-600" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                Emotional Frictions &amp; Grounding Antidotes
+              </h3>
+            </div>
+
+            <div className="space-y-3">
+              {cardSet.negative.map((card) => {
+                const isExpanded = expandedId === card.id;
+
+                const negativeLoggedItem = todayBhavaLogs?.find(
+                  (l) =>
+                    (l.cardId === card.id || l.id === card.id) &&
+                    !l.isPositive &&
+                    l.interactionType !== 'positive_buffer'
+                );
+                const isEncountered = Boolean(negativeLoggedItem);
+                const isCardResolved = Boolean(negativeLoggedItem?.isResolved);
+                const cardData = toNegativeCardData(card);
+
+                return (
+                  <div
+                    key={card.id}
+                    className={`rounded-2xl border transition-all duration-300 shadow-2xs ${
+                      isExpanded
+                        ? isEncountered && isCardResolved
+                          ? 'border-emerald-400 bg-emerald-50/20 shadow-xs'
+                          : isEncountered
+                          ? 'border-amber-400 bg-amber-50/20 shadow-xs'
+                          : 'border-orange-300 bg-orange-50/20 shadow-xs'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
+                    }`}
+                  >
+                    {/* Accordion Card Header */}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleExpand(card.id)}
+                      className="w-full flex items-center justify-between p-4 text-left cursor-pointer focus:outline-none"
+                      aria-expanded={isExpanded}
+                    >
+                      <div className="flex flex-col space-y-1 pr-3 min-w-0 flex-1">
+                        <h4 className="text-sm sm:text-base font-bold text-slate-900 leading-snug tracking-tight">
+                          {card.title}
+                        </h4>
+                        <p className="text-xs text-slate-500 font-medium">
+                          {card.badge}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                        {isEncountered && !isCardResolved ? (
+                          <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs">
+                            Active Friction
+                          </span>
+                        ) : isEncountered && isCardResolved ? (
+                          <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
+                            Resolved (+15)
+                          </span>
+                        ) : (
+                          <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold bg-orange-100 text-orange-900 border border-orange-200 shadow-2xs">
+                            Negative Friction
+                          </span>
+                        )}
+
+                        <ChevronDown
+                          className={`w-4 h-4 text-slate-400 transition-transform duration-300 ease-in-out ${
+                            isExpanded ? 'rotate-180 text-amber-700' : ''
+                          }`}
+                        />
+                      </div>
+                    </button>
+
+                    {/* Accordion Content */}
+                    <div
+                      className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                        isExpanded ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="p-4 pt-1 pb-5 border-t border-slate-100/90 space-y-4">
+                        {/* Reflection Box */}
+                        <div className="p-3.5 bg-amber-50/70 rounded-xl border border-amber-200/70 text-xs text-amber-950 leading-relaxed font-medium">
+                          <span className="font-bold block pb-1 text-amber-900 uppercase text-[10px] tracking-wider">
+                            Psychological Root &amp; Reflection
+                          </span>
+                          {card.reflection}
+                        </div>
+
+                        {/* Interactive 3-Step Grounding Antidotes Checklist */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between px-0.5">
+                            <span className="text-[11px] uppercase tracking-wider font-bold text-slate-500">
+                              Grounding Antidotes (Check as you practice)
+                            </span>
+                            <span className="text-[10px] font-semibold text-slate-400">
+                              3 steps
                             </span>
                           </div>
 
+                          <div className="space-y-2">
+                            {card.steps.map((step, idx) => {
+                              const stepKey = `${card.id}_step_${idx}`;
+                              const isChecked = Boolean(checkedSteps[stepKey]);
+
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleStepCheck(stepKey);
+                                  }}
+                                  className={`w-full flex items-start gap-2.5 p-3 rounded-xl border text-left text-xs transition-all duration-200 cursor-pointer ${
+                                    isChecked
+                                      ? 'bg-emerald-50/70 border-emerald-200/90 text-slate-800'
+                                      : 'bg-white border-slate-200/90 text-slate-700 hover:border-slate-300'
+                                  }`}
+                                >
+                                  <div
+                                    className={`w-4 h-4 rounded mt-0.5 flex items-center justify-center border flex-shrink-0 transition-colors ${
+                                      isChecked
+                                        ? 'bg-emerald-600 border-emerald-600 text-white'
+                                        : 'border-slate-300 bg-white'
+                                    }`}
+                                  >
+                                    {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                                  </div>
+                                  <span
+                                    className={`leading-relaxed font-medium ${
+                                      isChecked ? 'line-through text-slate-400' : ''
+                                    }`}
+                                  >
+                                    {step}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Interactive Action Controls */}
+                        {!isEncountered && (
+                          <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                logNegativeBhavaEncounter(cardData);
+                              }}
+                              className="flex-1 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] bg-amber-600 hover:bg-amber-700 text-white"
+                            >
+                              <AlertTriangle className="w-4 h-4 text-white flex-shrink-0" />
+                              <span>Experiencing This Friction</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleNegativeBhavaResolution(cardData);
+                              }}
+                              className="flex-1 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] bg-emerald-700 hover:bg-emerald-800 text-white"
+                            >
+                              <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />
+                              <span>✓ Mark as Resolved</span>
+                            </button>
+                          </div>
+                        )}
+
+                        {isEncountered && !isCardResolved && (
+                          <div className="space-y-3 pt-1">
+                            <div className="bg-amber-50 border border-amber-200/90 rounded-xl p-3 text-xs text-amber-900 leading-relaxed flex items-start gap-2 shadow-2xs">
+                              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                              <span>
+                                Active Unresolved Friction — Practice the 3 grounding antidotes above, then mark resolved to restore serenity.
+                              </span>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleNegativeBhavaResolution(cardData);
+                                }}
+                                className="flex-1 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] bg-emerald-700 hover:bg-emerald-800 text-white"
+                              >
+                                <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />
+                                <span>✓ Mark as Resolved</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  clearBhavaCardToday(card.id);
+                                }}
+                                className="py-3 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold cursor-pointer transition-colors shadow-2xs text-center"
+                                title="Remove from today's logs"
+                              >
+                                Remove from Logs
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {isEncountered && isCardResolved && (
                           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                toggleNegativeBhavaResolution(card);
+                                toggleNegativeBhavaResolution(cardData);
                               }}
-                              className="flex-1 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] bg-[#C85A32] hover:bg-[#B24D28] text-white"
+                              className="flex-1 py-3 px-4 rounded-xl shadow-xs transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.99] bg-emerald-600 hover:bg-emerald-700 text-white"
                             >
-                              <CheckCircle2 className="w-4 h-4 text-white" />
-                              <span>Mark as Resolved (Restore Sattva)</span>
+                              <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />
+                              <div className="flex flex-col text-center leading-tight">
+                                <span className="font-bold text-xs sm:text-sm">
+                                  Friction Resolved (+15 Surplus)
+                                </span>
+                                <span className="text-[10px] sm:text-[11px] font-normal text-emerald-100">
+                                  Tap to reopen
+                                </span>
+                              </div>
                             </button>
 
                             <button
@@ -347,53 +504,21 @@ export const CompassMobile: React.FC<CompassMobileProps> = ({ className = '' }) 
                                 e.stopPropagation();
                                 clearBhavaCardToday(card.id);
                               }}
-                              className="py-3 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold cursor-pointer transition-colors shadow-2xs text-center"
-                              title="Undo / Remove from today's logs"
+                              className="px-4 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold cursor-pointer transition-colors shadow-2xs text-center"
+                              title="Clear from today's logs"
                             >
-                              Undo / Remove
+                              Clear
                             </button>
                           </div>
-                        </div>
-                      )}
-
-                      {isEncountered && isCardResolved && (
-                        // Case 3: Friction resolved
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleNegativeBhavaResolution(card);
-                            }}
-                            className="flex-1 py-3 px-4 rounded-xl shadow-xs transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.99] bg-emerald-600 hover:bg-emerald-700 text-white"
-                          >
-                            <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />
-                            <div className="flex flex-col text-center leading-tight">
-                              <span className="font-bold text-xs sm:text-sm">Intellect Resolved</span>
-                              <span className="text-[10px] sm:text-[11px] font-normal text-emerald-100">Tap to reopen</span>
-                            </div>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              clearBhavaCardToday(card.id);
-                            }}
-                            className="px-4 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold cursor-pointer transition-colors shadow-2xs text-center"
-                            title="Clear from today's logs"
-                          >
-                            Clear
-                          </button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          </div>
+        </div>
       </div>
     </div>
   );

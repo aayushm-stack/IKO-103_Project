@@ -42,7 +42,7 @@ const features: FeatureItem[] = [
     id: 5,
     title: 'Personal Sankalpa Log',
     paragraph:
-      'A ship without a compass drifts with every wind, and a student without an inner intention gets pulled by every distraction. Your Sankalpa is the personal vow you made to yourself when you first entered BrahmaPath, thoughtfully placed right on your home dashboard so it never gets buried. Whenever you feel overwhelmed or tempted to give up on your routine, reading your own words reminds you that you are walking this path out of self-respect, not self-punishment.',
+      'A ship without a compass drifts with every wind, and a seeker without an inner intention gets pulled by every distraction. Your Sankalpa is the personal vow you made to yourself when you first entered BrahmaPath, thoughtfully placed right on your home dashboard so it never gets buried. Whenever you feel overwhelmed or tempted to give up on your routine, reading your own words reminds you that you are walking this path out of self-respect, not self-punishment.',
   },
   {
     id: 6,
@@ -60,19 +60,19 @@ const features: FeatureItem[] = [
     id: 8,
     title: 'Impulse Interceptor',
     paragraph:
-      'Whenever a heavy urge pulls at you—whether it is doomscrolling, exam anxiety, or sudden lethargy—open this tool before acting on the impulse. Start by tapping the trigger you are feeling and sliding the Urge Intensity bar from 1 to 5. Watch how the 7-step Bhagavad Gita cascade below it highlights the exact stage your mind has reached, showing you how a tiny lingering thought grows into a strong craving. Next, scroll down to the two text boxes: in the first box (Vitarka), honestly name the excuse your mind is telling you; in the second box (Pratipaksha), write a calm, truthful counter-thought. Pick one physical micro-swap action from the grid—like splashing cold water or taking five slow breaths—and tap the main button to intercept the urge, or honestly log a slip without guilt if the urge already passed.',
+      'Whenever a heavy urge pulls at you—whether it is doomscrolling, restlessness, or sudden lethargy—open this tool before acting on the impulse. Start by tapping the trigger you are feeling and sliding the Urge Intensity bar from 1 to 5. Watch how the 7-step Bhagavad Gita cascade below it highlights the exact stage your mind has reached, showing you how a tiny lingering thought grows into a strong craving. Next, scroll down to the two text boxes: in the first box (Vitarka), honestly name the excuse your mind is telling you; in the second box (Pratipaksha), write a calm, truthful counter-thought. Pick one physical micro-swap action from the 6 context-aware options dynamically curated for your active Life Rhythm or Posting Terrain—like splashing cold water or taking five slow breaths—and tap the main button to intercept the urge, or honestly log a slip without guilt if the urge already passed.',
   },
   {
     id: 9,
     title: 'Bhāva Compass',
     paragraph:
-      'Student life is full of quiet emotional friction—watching others get placements, doubting your own abilities, feeling lonely in a crowded campus, or dealing with an unfair project partner. When you open the Bhāva Compass, you will see eight expandable cards: three Positive Buffer cards at the top and five Negative Friction cards below. Whenever you experience a moment of shared joy or resilience, open a green Positive Buffer card and log it to build emotional strength. Whenever envy, self-doubt, or hostility hits you, open the matching Negative Friction card; you can mark that you are experiencing that friction right now, read the comforting explanation, practice the simple step-by-step antidotes rooted in Patanjali\'s Yoga Sutras, and then tap Mark as Resolved to clear the heaviness from your mind.',
+      'Everyday life is full of quiet emotional friction—comparing yourself to others, doubting your own worth, feeling unseen or lonely, or dealing with difficult personal or work dynamics. When you open the Bhāva Compass, you will see eight expandable cards: three Positive Buffer cards at the top and five Negative Friction cards below. Whenever you experience a moment of shared joy or resilience, open a green Positive Buffer card and log it to build emotional strength. Whenever envy, self-doubt, or hostility hits you, open the matching Negative Friction card; you can mark that you are experiencing that friction right now, read the comforting explanation, practice the simple step-by-step antidotes rooted in Patanjali\'s Yoga Sutras, and then tap Mark as Resolved to clear the heaviness from your mind.',
   },
   {
     id: 10,
     title: 'Breathing Sanctum',
     paragraph:
-      'When your thoughts are racing too fast to reason with them, the quickest way to quiet the mind is through the breath. Open the Breathing Sanctum two or three times a day—especially before a deep study session or when anxiety spikes—and simply follow the expanding and contracting rhythm on screen. Just two minutes of slow, guided breathing softens your heart rate, settles nervous tension, and brings your awareness back into the present moment.',
+      'When your thoughts are racing too fast to reason with them, the quickest way to quiet the mind is through the breath. Open the Breathing Sanctum two or three times a day—especially before focused work or when stress spikes—and simply follow the expanding and contracting rhythm on screen. Just two minutes of slow, guided breathing softens your heart rate, settles nervous tension, and brings your awareness back into the present moment.',
   },
   {
     id: 11,

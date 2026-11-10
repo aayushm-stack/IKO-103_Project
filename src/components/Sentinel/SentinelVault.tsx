@@ -320,13 +320,9 @@ export const SentinelVault: React.FC<SentinelVaultProps> = ({ className = '' }) 
         className="p-5 sm:p-6 rounded-3xl border shadow-xs space-y-6"
       >
         {/* Header with Title and Shastra Lens Trigger */}
-        <div className="flex items-start justify-between border-b border-slate-200/90 pb-4 gap-3">
-          <div className="space-y-1">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
-              <Lock className="w-3 h-3 text-emerald-700" />
-              100% Offline OPSEC Storage • Zero Cloud Telemetry
-            </span>
-            <div className="flex items-center gap-2 pt-0.5">
+        <div className="flex items-center justify-between border-b border-slate-200/90 pb-4">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-emerald-800 flex-shrink-0" />
               <h2 className="text-base sm:text-lg font-bold text-slate-900">
                 Sentinel Readiness &amp; Equilibrium Vault
@@ -338,7 +334,7 @@ export const SentinelVault: React.FC<SentinelVaultProps> = ({ className = '' }) 
           </div>
           <ShastraLensButton
             onClick={() => openShastraLens('gunas')}
-            className="ml-2 flex-shrink-0 mt-1"
+            className="ml-2 flex-shrink-0"
           />
         </div>
 

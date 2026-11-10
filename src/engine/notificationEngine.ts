@@ -5,14 +5,14 @@ import { LocalNotifications } from '@capacitor/local-notifications';
  *
  * Implements a 30-Day Rolling Explicit `at: Date` Queue (4 Fixed + 3 Random daily alerts):
  * - 4 Fixed Daily Sadhana log anchors:
- *     08:30 — Prātaḥ Smṛti (Morning Anchor)
- *     13:30 — Madhyāhna Smṛti (Midday Pause)
- *     18:30 — Sāyam Smṛti (Evening Reset)
- *     21:30 — Rātri Smṛti (Night Reflection / Bedtime)
+ *     08:30 — Morning Anchor
+ *     13:30 — Midday Pause
+ *     18:30 — Evening Reset
+ *     21:30 — Night Reflection
  * - 3 Randomized Mindfulness check-ins:
- *     10:15–12:15 — Random 1: Anti-Distraction Check
+ *     10:15–12:15 — Random 1: Anti-Distraction & Work Focus Check
  *     15:45–17:30 — Random 2: Low Mood & Emotional Support
- *     20:00–21:15 — Random 3: Night Wind-down & Digital Curfew (before 21:30 bedtime)
+ *     20:00–21:15 — Random 3: Night Wind-Down & Screen Detachment
  *
  * Guaranteed Background Delivery (Even if user hasn't opened app recently):
  * 1. 30-day queue (up to 210 alarms) pre-armed directly in Android AlarmManager.
@@ -63,32 +63,32 @@ export const FIXED_DAILY_SLOTS: SmritiDailySlot[] = [
     id: 1,
     hour: 8,
     minute: 30,
-    title: 'Prātaḥ Smṛti (Morning Anchor)',
-    body: "Good morning! Review your Sankalpa and log last night's Nidrā (sleep) in the Sadhana Hub.",
+    title: 'Morning Anchor',
+    body: "Good morning. Review your pledge and log last night's sleep to start your day centered.",
     timeWindow: 'morning',
   },
   {
     id: 2,
     hour: 13,
     minute: 30,
-    title: 'Madhyāhna Smṛti (Midday Pause)',
-    body: 'Midday check-in: Log your morning Āhāra intake and keep your Chariot reins steady.',
+    title: 'Midday Pause',
+    body: 'Time to log your morning intake and screen time. Keep your focus steady for the afternoon.',
     timeWindow: 'midday',
   },
   {
     id: 3,
     hour: 18,
     minute: 30,
-    title: 'Sāyam Smṛti (Evening Reset)',
-    body: 'Evening transition: Update your Āhāra screen time and clear any emotional friction in the Bhāva Compass.',
+    title: 'Evening Reset',
+    body: 'Evening transition: Update your screen time logs and clear any mental friction from the day.',
     timeWindow: 'evening',
   },
   {
     id: 4,
     hour: 21,
     minute: 30,
-    title: 'Rātri Smṛti (Night Reflection)',
-    body: "Day's end: Record your Brahmacharya focus blocks and write a brief mindful note before sleep.",
+    title: 'Night Reflection',
+    body: "Day's end: Record your deep work blocks and write a brief mindful note before you sleep.",
     timeWindow: 'night',
   },
 ];
@@ -101,46 +101,46 @@ export const SMRITI_DAILY_SLOTS = FIXED_DAILY_SLOTS;
  */
 export const RANDOM_PROMPTS_DISTRACTION = [
   {
-    title: 'Chariot Reins Check',
-    body: 'Are you holding the reins right now, or has your attention drifted? Open the Pause Gate if an urge is pulling you.',
+    title: 'Focus Check',
+    body: 'Has your attention drifted? If an urge is pulling you, open the Impulse Interceptor to recenter.',
   },
   {
-    title: 'Mindful Focus Check',
-    body: 'Feeling distracted or restless? Take two quiet minutes in the Breathing Sanctum to reset your rhythm.',
+    title: 'Mindful Pause',
+    body: 'Feeling restless? Take two quiet minutes in the Breathing Sanctum to reset your rhythm.',
   },
   {
     title: 'Break the Loop',
-    body: 'Notice where your mind is. If you are stuck in digital drift, log a quick Pratipaksha reframe right now.',
+    body: 'Notice your mind. If you are stuck scrolling, use a quick cognitive reframe to step away.',
   },
 ];
 
 export const RANDOM_PROMPTS_MOOD = [
   {
     title: 'Gentle Check-In',
-    body: 'Feeling low, overwhelmed, or comparing yourself to others today? Open the Bhāva Compass—be kind to yourself.',
+    body: 'Feeling overwhelmed or comparing yourself to others? Open the Compass and be kind to yourself.',
   },
   {
     title: 'Steady Your Heart',
-    body: "If today hasn't gone according to plan, forgive the slip without guilt. You can realign your Chariot right now.",
+    body: "If today hasn't gone as planned, forgive the slip without guilt. You can realign right now.",
   },
   {
-    title: 'Pause & Breathe',
-    body: 'Carrying any heavy thoughts or frustration this afternoon? Step away from your screen and take five slow breaths.',
+    title: 'Step Away',
+    body: 'Carrying any heavy thoughts or frustration? Step away from the screen and take five slow breaths.',
   },
 ];
 
 export const RANDOM_PROMPTS_NIGHT = [
   {
     title: 'Evening Wind-Down',
-    body: 'Step back from intense screens and sensory overload. Let your mind begin to settle into quiet stillness.',
+    body: 'Step back from intense screens and sensory overload. Let your mind settle into quiet stillness.',
   },
   {
-    title: 'Night Digital Curfew',
-    body: 'Consider putting your phone aside. Giving your eyes a break before bed ensures your Nidrā (sleep) remains deep and restorative.',
+    title: 'Digital Curfew',
+    body: 'Consider putting your phone aside. Giving your eyes a break ensures your rest remains deep.',
   },
   {
-    title: 'Ease the Chariot',
-    body: 'Whatever is left unfinished today can wait for tomorrow. Loosen your grip, take three slow breaths, and let go of tension.',
+    title: 'Release Tension',
+    body: 'Whatever is left unfinished can wait. Loosen your grip, take three slow breaths, and let go.',
   },
 ];
 

@@ -16,6 +16,7 @@ export { DailyVerseCard, type DailyVerse } from './SadhanaHub/DailyVerseCard';
 // Katha Upanishad Chariot Component
 export { ChariotHome, ChariotStatusBadge, type ChariotStatusBadgeProps } from './Chariot/ChariotHome';
 export { TridoshaBar } from './Chariot/TridoshaBar';
+export { LifeRhythmBar, type LifeRhythmBarProps } from './Chariot/LifeRhythmBar';
 
 // Trayopastambha / Yukta Logging Components
 export { TrayopastambhaCard } from './YuktaLog/TrayopastambhaCard';
@@ -86,3 +87,4 @@ export {
 // Sentinel Frontline Components
 export { SentinelDashboard } from './Sentinel/SentinelDashboard';
 export { SentinelVault } from './Sentinel/SentinelVault';
+export { PostingEnvironmentBar } from './Sentinel/PostingEnvironmentBar';

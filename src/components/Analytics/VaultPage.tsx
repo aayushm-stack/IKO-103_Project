@@ -588,7 +588,7 @@ export const VaultPage: React.FC<VaultPageProps> = ({ className = '' }) => {
         <div className="space-y-3 pt-4 border-t border-slate-200">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-800">
-              Rest &amp; Deep Work Ledger
+              Rest &amp; Focus Ledger
             </h3>
           </div>
 
@@ -611,7 +611,7 @@ export const VaultPage: React.FC<VaultPageProps> = ({ className = '' }) => {
                   <tr className="bg-slate-100/90 text-slate-700 border-b border-slate-200">
                     <th className="w-[34%] p-3 font-bold truncate">Date (DD/MM)</th>
                     <th className="w-[33%] p-3 font-bold truncate">Sleep Rest</th>
-                    <th className="w-[33%] p-3 font-bold truncate">Focus Hours</th>
+                    <th className="w-[33%] p-3 font-bold truncate">Meaningful Focus</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -643,7 +643,7 @@ export const VaultPage: React.FC<VaultPageProps> = ({ className = '' }) => {
                         {row.penaltyApplied || !row.brahmacharyaLogged ? (
                           <span className="text-slate-400 font-normal">--</span>
                         ) : (
-                          `${row.focusBlocks} ${row.focusBlocks === 1 ? 'hr' : 'hrs'}`
+                          `${row.focusBlocks} ${row.focusBlocks === 1 ? 'session' : 'sessions'}`
                         )}
                       </td>
                     </tr>
@@ -683,7 +683,7 @@ export const VaultPage: React.FC<VaultPageProps> = ({ className = '' }) => {
                 <thead>
                   <tr className="bg-slate-100/90 text-slate-700 border-b border-slate-200">
                     <th className="w-[28%] p-3 font-bold truncate">Date (DD/MM)</th>
-                    <th className="w-[30%] p-3 font-bold truncate">Screen / Avg</th>
+                    <th className="w-[30%] p-3 font-bold truncate">Screen vs Baseline</th>
                     <th className="w-[42%] p-3 font-bold truncate">Mindful Status</th>
                   </tr>
                 </thead>

@@ -86,7 +86,7 @@ export const FeaturesPage: React.FC<FeaturesPageProps> = ({ className = '' }) =>
           </span>
         </button>
 
-        {/* Tab 2: Impulse Interceptor / Pause Gate */}
+        {/* Tab 2: Impulse Interceptor */}
         <button
           type="button"
           onClick={() => handleFeatureChange('interceptor')}
@@ -97,8 +97,8 @@ export const FeaturesPage: React.FC<FeaturesPageProps> = ({ className = '' }) =>
           }`}
         >
           <span className="leading-tight">
-            <span className="inline-block">{isFrontline ? 'Pause' : 'Impulse'}</span>{' '}
-            <span className="inline-block">{isFrontline ? 'Gate' : 'Interceptor'}</span>
+            <span className="inline-block">Impulse</span>{' '}
+            <span className="inline-block">Interceptor</span>
           </span>
         </button>
 

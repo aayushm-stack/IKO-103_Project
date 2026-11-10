@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AccountProvider } from './context/AccountContext';
 import { BrahmaPathProvider, useBrahmaPath } from './context/BrahmaPathContext';
-import { DevHarness } from './components/DevHarness';
+
 import {
   scheduleDailySmritiAlarms,
   cancelDailySmritiAlarms,
@@ -24,7 +24,6 @@ import {
 import { OnboardingFlow } from './components/Onboarding/OnboardingFlow';
 import { SentinelDashboard } from './components/Sentinel/SentinelDashboard';
 import { SentinelVault } from './components/Sentinel/SentinelVault';
-import { ChariotHome } from './components/Chariot/ChariotHome';
 
 type AppViewTab = 'home' | 'features' | 'vault' | 'breathe' | 'harness' | 'sankalpa' | 'settings' | 'about' | 'onboarding';
 
@@ -132,7 +131,7 @@ function MainContent() {
   return (
     <div className="min-h-screen bg-parchment text-charcoal font-sans antialiased">
       {/* ================= VIEW 1: DEVELOPER / JUDGE TEST HARNESS ================= */}
-      {activeTab === 'harness' ? (
+
         <div>
           {/* Header to quickly navigate back to the Mobile UI */}
           <div className="bg-[#1E293B] text-white text-xs px-4 py-2.5 flex items-center justify-between border-b border-slate-700 sticky top-0 z-50 shadow-md">
@@ -147,7 +146,7 @@ function MainContent() {
               onClick={() => setActiveTab('home')}
               className="px-3.5 py-1.5 bg-[#D97706] text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
-              📱 Back to Mobile UI
+              Back to Mobile UI
             </button>
           </div>
 
@@ -168,7 +167,7 @@ function MainContent() {
           <main className="p-4 space-y-4">
             {/* 1. HOME TAB: Clean Cognitive Frameworks (Chariot, Gita Quote, Guna Spectrum) */}
             {activeTab === 'home' && (
-              isFrontline ? <SentinelDashboard /> : <ChariotHome />
+              isFrontline ? <SentinelDashboard /> : <HomeDashboard onOpenShastraLens={openShastraLens} />
             )}
 
             {/* 2. FEATURES TAB (Sadhana Hub, Impulse Interceptor, Bhava Compass) */}

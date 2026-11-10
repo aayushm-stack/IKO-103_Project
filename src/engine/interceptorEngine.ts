@@ -1,7 +1,7 @@
 import { InterceptionRecord } from '../types/iks';
 
 /**
- * Helper to determine if an interception record represents a successful Pause Gate reframe.
+ * Helper to determine if an interception record represents a successful Impulse Interceptor reframe.
  * First checks explicit negative flags to prevent slips/unresolved frictions from counting as successes.
  * Then checks positive flags (isSuccessful, isResolved, Sattvic transition, or pratipaksha reframe text).
  */
@@ -36,6 +36,87 @@ export function isInterceptionSuccessful(item: InterceptionRecord | any): boolea
 }
 
 /**
+ * Structured statistical overview of today's Impulse Interceptor activity
+ * for dynamic Chariot Composure weighting and telemetry gauges.
+ */
+export interface InterceptionStats {
+  hasActivityToday: boolean;
+  prqScore: number;
+  interceptedCount: number;
+  slipCount: number;
+}
+
+/**
+ * Calculates today's Pratipaksha Resilience Quotient (PRQ) and activity statistics:
+ *
+ * If todayEvents.length === 0:
+ *   hasActivityToday = false, prqScore = 0.
+ * If todayEvents.length > 0:
+ *   hasActivityToday = true.
+ *   If interceptedEvents.length === 0 (user only logged Honest Slips today):
+ *     prqScore = 0 (active negative score that actively pulls Chariot Composure down!).
+ *   Else:
+ *     posWeight = sum(0.7 + 0.3 * (e.urgeIntensity || 3))
+ *     negWeight = sum(0.8 + 0.35 * (e.urgeIntensity || 3))
+ *     rawRatio = posWeight / (posWeight + negWeight)
+ *     totalInterceptedIntensity = sum(e.urgeIntensity || 3)
+ *     intensityFactor = Math.min(1.0, 0.78 + 0.045 * totalInterceptedIntensity)
+ *     prqScore = Math.round(100 * rawRatio * intensityFactor)
+ */
+export function calculateInterceptionStats(
+  todayEvents: InterceptionRecord[] = []
+): InterceptionStats {
+  if (!todayEvents || todayEvents.length === 0) {
+    return {
+      hasActivityToday: false,
+      prqScore: 0,
+      interceptedCount: 0,
+      slipCount: 0,
+    };
+  }
+
+  const interceptedEvents = todayEvents.filter((e) => isInterceptionSuccessful(e));
+  const slipEvents = todayEvents.filter((e) => !isInterceptionSuccessful(e));
+
+  const interceptedCount = interceptedEvents.length;
+  const slipCount = slipEvents.length;
+
+  // Active negative score: 0 if user only logged slips today
+  if (interceptedCount === 0) {
+    return {
+      hasActivityToday: true,
+      prqScore: 0,
+      interceptedCount: 0,
+      slipCount,
+    };
+  }
+
+  const posWeight = interceptedEvents.reduce(
+    (sum, e) => sum + (0.7 + 0.3 * (e.urgeIntensity || 3)),
+    0
+  );
+  const negWeight = slipEvents.reduce(
+    (sum, e) => sum + (0.8 + 0.35 * (e.urgeIntensity || 3)),
+    0
+  );
+  const rawRatio = posWeight / (posWeight + negWeight);
+
+  const totalInterceptedIntensity = interceptedEvents.reduce(
+    (sum, e) => sum + (e.urgeIntensity || 3),
+    0
+  );
+  const intensityFactor = Math.min(1.0, 0.78 + 0.045 * totalInterceptedIntensity);
+  const prqScore = Math.max(0, Math.min(100, Math.round(100 * rawRatio * intensityFactor)));
+
+  return {
+    hasActivityToday: true,
+    prqScore,
+    interceptedCount,
+    slipCount,
+  };
+}
+
+/**
  * Detailed breakdown of the Pratipaksha Resilience Quotient (PRQ) metrics.
  */
 export interface PRQBreakdown {
@@ -50,88 +131,35 @@ export interface PRQBreakdown {
 /**
  * Calculates the Pratipaksha Resilience Quotient (PRQ) / GateScore
  * rooted in Bhagavad Gita 2.62-63 cascade interception and Patanjali Yoga Sutra 2.33.
- *
- * Part 1 (Intensity-Weighted Ratio & Dynamic Sensitivity):
- * - Calculate total Cognitive Load: Denominator = sum of all urgeIntensity values logged today.
- * - Numerator = sum of urgeIntensity for only the successful interceptions.
- * - Dynamic Sensitivity: If all logged urges are successful (successfulCognitiveLoad === totalCognitiveLoad > 0),
- *   BaseScore starts at 85 + Math.min(10, totalCognitiveLoad * 1.5).
- * - Otherwise: BaseScore = (Numerator / Denominator) * 100.
- *
- * Part 2 (Stamina Bonus):
- * - Logarithmic Stamina Bonus: Bonus = (Total Successful Intercepts) * 2.5.
- *
- * Final Math:
- * - GateScore = Math.min(100, BaseScore + Bonus).
- *
- * Edge Case:
- * - If interceptions.length === 0, return 100 (Neutral baseline when no urges occurred).
+ * Delegates to calculateInterceptionStats for consistent dynamic weighting.
  *
  * @param interceptions Array of InterceptionRecord items logged today
  * @returns GateScore clamped between 0 and 100
  */
-export function calculateGateScore(interceptions: InterceptionRecord[]): number {
-  // Edge Case: If interceptions.length === 0, return 100
-  if (!interceptions || interceptions.length === 0) {
-    return 100;
-  }
-
-  let totalCognitiveLoad = 0;
-  let successfulCognitiveLoad = 0;
-  let totalSuccessfulIntercepts = 0;
-
-  for (const item of interceptions) {
-    const intensity =
-      typeof item.urgeIntensity === 'number' && item.urgeIntensity > 0
-        ? item.urgeIntensity
-        : 1;
-
-    totalCognitiveLoad += intensity;
-
-    if (isInterceptionSuccessful(item)) {
-      successfulCognitiveLoad += intensity;
-      totalSuccessfulIntercepts += 1;
-    }
-  }
-
-  // Edge Case: If total cognitive load is 0, return 100
-  if (totalCognitiveLoad === 0) {
-    return 100;
-  }
-
-  // Part 1: Intensity-Weighted Ratio with Dynamic Sensitivity
-  let baseScore: number;
-  if (successfulCognitiveLoad === totalCognitiveLoad && interceptions.length > 0) {
-    baseScore = 85 + Math.min(10, totalCognitiveLoad * 1.5);
-  } else {
-    baseScore = (successfulCognitiveLoad / totalCognitiveLoad) * 100;
-  }
-
-  // Part 2: Stamina Bonus
-  const bonus = totalSuccessfulIntercepts * 2.5;
-
-  // Final Math: GateScore = Math.min(100, BaseScore + Bonus)
-  return Math.min(100, Math.round(baseScore + bonus));
+export function calculateGateScore(interceptions: InterceptionRecord[] = []): number {
+  const stats = calculateInterceptionStats(interceptions);
+  return stats.prqScore;
 }
 
 /**
  * Computes a full analytical breakdown of the PRQ GateScore for telemetry and gauges.
  */
-export function getPRQBreakdown(interceptions: InterceptionRecord[]): PRQBreakdown {
+export function getPRQBreakdown(interceptions: InterceptionRecord[] = []): PRQBreakdown {
+  const stats = calculateInterceptionStats(interceptions);
+
   if (!interceptions || interceptions.length === 0) {
     return {
       totalCognitiveLoad: 0,
       successfulCognitiveLoad: 0,
       totalSuccessfulIntercepts: 0,
-      baseScore: 100,
+      baseScore: 0,
       bonus: 0,
-      gateScore: 100,
+      gateScore: 0,
     };
   }
 
   let totalCognitiveLoad = 0;
   let successfulCognitiveLoad = 0;
-  let totalSuccessfulIntercepts = 0;
 
   for (const item of interceptions) {
     const intensity =
@@ -143,37 +171,15 @@ export function getPRQBreakdown(interceptions: InterceptionRecord[]): PRQBreakdo
 
     if (isInterceptionSuccessful(item)) {
       successfulCognitiveLoad += intensity;
-      totalSuccessfulIntercepts += 1;
     }
   }
-
-  if (totalCognitiveLoad === 0) {
-    return {
-      totalCognitiveLoad: 0,
-      successfulCognitiveLoad: 0,
-      totalSuccessfulIntercepts: 0,
-      baseScore: 100,
-      bonus: 0,
-      gateScore: 100,
-    };
-  }
-
-  let baseScore: number;
-  if (successfulCognitiveLoad === totalCognitiveLoad && interceptions.length > 0) {
-    baseScore = 85 + Math.min(10, totalCognitiveLoad * 1.5);
-  } else {
-    baseScore = (successfulCognitiveLoad / totalCognitiveLoad) * 100;
-  }
-
-  const bonus = totalSuccessfulIntercepts * 2.5;
-  const gateScore = Math.min(100, Math.round(baseScore + bonus));
 
   return {
     totalCognitiveLoad,
     successfulCognitiveLoad,
-    totalSuccessfulIntercepts,
-    baseScore: Math.round(baseScore * 10) / 10,
-    bonus: Math.round(bonus * 10) / 10,
-    gateScore,
+    totalSuccessfulIntercepts: stats.interceptedCount,
+    baseScore: stats.prqScore,
+    bonus: 0,
+    gateScore: stats.prqScore,
   };
 }
