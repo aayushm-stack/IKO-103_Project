@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useBrahmaPath } from '../../context/BrahmaPathContext';
-import { MASTER_MICRO_SWAPS, MicroSwapItem } from '../../data/microSwaps';
 import {
   User,
   AlertTriangle,
   AlertCircle,
   Sparkles,
   Trash2,
-  Sliders,
   Check,
   Bell,
   BookOpen,
   Smartphone,
 } from 'lucide-react';
+import { LIFE_RHYTHMS } from '../../data/seekerShastraData';
+import { DEPLOYMENT_ENVIRONMENTS } from '../../data/sentinelShastraData';
+import { LifeRhythm, DeploymentEnvironment } from '../../types/shastra';
+import {
+  FOUNDATIONAL_SEEKER_SANKALPA,
+  FOUNDATIONAL_SENTINEL_SANKALPA,
+} from '../Onboarding/OnboardingFlow';
+
 import {
   requestNotificationPermission,
   getNotificationPermissionStatus,
@@ -28,12 +34,12 @@ export interface SettingsPageProps {
 }
 
 /**
- * SettingsPage handles user identity preferences, Pause Gate micro-swap customization,
+ * SettingsPage handles user identity preferences, Impulse Interceptor customization,
  * and secure local data management.
  *
  * Implements:
  * 1. Profile Section (Name auto-save).
- * 2. Pause Gate Toolkit Section (Select 2 to 12 customizable Shreyas Micro-Swaps).
+ * 2. Dynamic Life Rhythm and Posting Terrain Adaptive Micro-Swaps.
  *    - Clickable card wrapped in <label>
  *    - Hidden native checkbox: `sr-only peer`
  *    - Custom card styling: `border border-slate-200 rounded-xl p-3 cursor-pointer transition-all peer-checked:border-orange-500 peer-checked:bg-orange-50`
@@ -60,12 +66,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   // Prefer prop if provided, otherwise fallback to context routing
   const setActiveView = setActiveViewProp || contextSetActiveView;
 
-  // Selected micro-swap IDs with fallback to all 12 master micro-swaps
-  const selectedSwapIds: string[] =
-    Array.isArray(preferences.selectedMicroSwapIds) && preferences.selectedMicroSwapIds.length > 0
-      ? preferences.selectedMicroSwapIds
-      : MASTER_MICRO_SWAPS.map((s) => s.id);
-
   const [showResetModal, setShowResetModal] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermissionStatus>(() =>
     getNotificationPermissionStatus()
@@ -78,6 +78,16 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   // Local state for Name field with empty string validation
   const [nameInput, setNameInput] = useState<string>(preferences.name ?? '');
   const [nameError, setNameError] = useState<string>('');
+  
+  // Active Sankalpa in Settings - Non-editable exact agreed pledge
+  const isFrontline = preferences.battlegroundPath === 'frontline';
+  const currentRhythm = preferences.lifeRhythm ?? 'learning_study';
+  const currentEnv = preferences.deploymentEnvironment ?? 'active_border';
+
+  const activePledge = isFrontline
+    ? FOUNDATIONAL_SENTINEL_SANKALPA
+    : FOUNDATIONAL_SEEKER_SANKALPA;
+
 
   // Keep nameInput in sync if preferences.name changes externally and no active error
   useEffect(() => {
@@ -110,24 +120,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     } else {
       setNameError('');
       updatePreferences({ name: trimmed });
-    }
-  };
-
-  // Toggle Micro-Swap with strict minimum-of-2 validation
-  const handleToggleSwap = (swapId: string) => {
-    const isChecked = selectedSwapIds.includes(swapId);
-
-    if (isChecked) {
-      // Validation Logic: If user tries to uncheck an item and resulting length < 2, ignore the click
-      if (selectedSwapIds.length <= 2) {
-        return;
-      }
-      const next = selectedSwapIds.filter((id) => id !== swapId);
-      updatePreferences({ selectedMicroSwapIds: next });
-    } else {
-      // Add up to 12 swaps
-      const next = [...selectedSwapIds, swapId];
-      updatePreferences({ selectedMicroSwapIds: next });
     }
   };
 
@@ -178,27 +170,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   return (
     <div className={`w-full max-w-md mx-auto p-4 space-y-6 pb-24 ${className}`}>
       {/* Page Title & Context Header */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-2">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-600 animate-pulse" />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800">
-              Personal Sanctum &amp; Config
-            </span>
-          </div>
-          <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
-            Local-First
-          </span>
-        </div>
-
-        <div className="space-y-1 pt-1">
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
-            Settings &amp; Preferences
-          </h1>
-          <p className="text-xs text-slate-500 leading-relaxed">
-            Manage your personal identity, impulse interceptor toolkit, and local data persistence.
-          </p>
-        </div>
+      <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-1">
+        <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
+          Settings &amp; Preferences
+        </h1>
+        <p className="text-xs text-slate-500 leading-relaxed">
+          Manage your personal identity, impulse interceptor toolkit, and local data persistence.
+        </p>
       </div>
 
       {/* TOP SECTION: User Identity / Profile (Name) */}
@@ -269,6 +247,114 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         </div>
       </section>
 
+      {/* 2B. ACTIVE BATTLEGROUND SUB-GROUP OPTIONS (BELOW EACH OTHER) */}
+      <section
+        aria-label="Active Stage Sub-Group"
+        className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-3"
+      >
+        <div className="space-y-0.5">
+          <h2 className="text-sm sm:text-base font-bold text-slate-900">
+            {isFrontline
+              ? 'Deployment Posting Environment'
+              : 'Current Life Rhythm'}
+          </h2>
+          <p className="text-xs text-slate-500">
+            {isFrontline
+              ? 'Select your operational posting terrain to adapt somatic countermeasures and watch sleep tools.'
+              : 'Select your daily arena rhythm to adapt focus prompts, triggers, and cognitive tools.'}
+          </p>
+        </div>
+
+        <div className="space-y-2.5 pt-1">
+          {isFrontline ? (
+            DEPLOYMENT_ENVIRONMENTS.map((envItem) => {
+              const isSelected = currentEnv === envItem.id;
+              return (
+                <button
+                  key={envItem.id}
+                  type="button"
+                  onClick={() => updatePreferences({ deploymentEnvironment: envItem.id })}
+                  className={`w-full text-left p-3.5 rounded-xl border transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-emerald-50/80 border-emerald-700/80 text-slate-900 shadow-2xs'
+                      : 'bg-white border-slate-200/90 text-slate-700 hover:bg-slate-50/90'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-slate-900">{envItem.label}</span>
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                        isSelected ? 'border-emerald-700 bg-white' : 'border-slate-300 bg-white'
+                      }`}
+                    >
+                      {isSelected && <span className="w-2 h-2 rounded-full bg-emerald-700" />}
+                    </div>
+                  </div>
+                  <span className="text-[10.5px] font-semibold text-[#D97706] mt-0.5 block">
+                    {envItem.badge}
+                  </span>
+                  <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                    {envItem.summary}
+                  </p>
+                </button>
+              );
+            })
+          ) : (
+            LIFE_RHYTHMS.map((rhythm) => {
+              const isSelected = currentRhythm === rhythm.id;
+              return (
+                <button
+                  key={rhythm.id}
+                  type="button"
+                  onClick={() => updatePreferences({ lifeRhythm: rhythm.id })}
+                  className={`w-full text-left p-3.5 rounded-xl border transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-emerald-50/80 border-emerald-700/80 text-slate-900 shadow-2xs'
+                      : 'bg-white border-slate-200/90 text-slate-700 hover:bg-slate-50/90'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-slate-900">{rhythm.label}</span>
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                        isSelected ? 'border-emerald-700 bg-white' : 'border-slate-300 bg-white'
+                      }`}
+                    >
+                      {isSelected && <span className="w-2 h-2 rounded-full bg-emerald-700" />}
+                    </div>
+                  </div>
+                  <span className="text-[10.5px] font-semibold text-[#D97706] mt-0.5 block">
+                    {rhythm.badge}
+                  </span>
+                  <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                    {rhythm.summary}
+                  </p>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </section>
+
+      {/* 2C. FOUNDATIONAL SANKALPA (INNER PLEDGE) - NON-EDITABLE */}
+      <section
+        aria-label="Foundational Sankalpa"
+        className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-3"
+      >
+        <div className="space-y-0.5 pb-2 border-b border-slate-100">
+          <h2 className="text-sm sm:text-base font-bold text-slate-900 uppercase tracking-wider">
+            Your Sankalpa (Inner Pledge)
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            The foundational intention you anchored when initiating BrahmaPath.
+          </p>
+        </div>
+
+        <div className="p-4 bg-slate-50/70 rounded-2xl border border-slate-200/90 text-xs sm:text-sm text-slate-800 leading-relaxed font-serif italic">
+          {activePledge}
+        </div>
+      </section>
+
       {/* ADAPTIVE SCREEN TIME BASELINE SECTION */}
       <section
         aria-label="Screen Time Baseline Configuration"
@@ -289,33 +375,29 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </div>
           </div>
           <span className="text-xs font-bold text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 whitespace-nowrap">
-            {currentBaselineHours} hrs / day
+            {currentBaselineHours.toFixed(1)} hrs daily
           </span>
         </div>
 
         {/* Dedicated Psychological Explanation Box */}
         <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs text-slate-600 leading-relaxed space-y-2">
           <p>
-            Standard tracking apps set a rigid, low screen-time limit that makes you feel judged or demotivated the moment you log an honest 7 or 8 hours. BrahmaPath works differently: you set your honest current daily average right here, and your Sadhana slider automatically expands its maximum limit to {dynamicMaxHours} hours (+4 hours of breathing room) so your current habit never looks like a worst-case failure.
+            Standard tracking apps set a rigid, low screen-time limit that makes you feel judged or demotivated the moment you log an honest day. BrahmaPath works differently: you set your honest current daily average right here (for example, 6 hours), and your Sadhana slider automatically expands its upper limit to 10 hours (+4 hours of breathing room) so your daily reality never feels like an immediate failure.
           </p>
           <p>
-            When you log below {currentBaselineHours} hours, the engine celebrates your recovery. When you stay near {currentBaselineHours} hours, it honors your steady control. And as your habits heal over the coming weeks, you can lower this baseline at your own pace—while your past Vault logs permanently keep the achievements they earned under your earlier baseline.
+            When you log below 6 hours, the engine celebrates your recovery. When you stay near 6 hours, it honors your steady control. And as your habits heal over the coming weeks, you can gradually lower this baseline at your own pace—while your past Vault records permanently keep the achievements they earned.
           </p>
         </div>
 
         {/* Interactive Baseline Slider (2.0 hrs to 12.0 hrs, step 0.5) */}
-        <div className="space-y-2 pt-1">
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="baseline-screen-slider"
-              className="text-xs font-bold text-slate-800"
-            >
-              What is your current average screen time that you want to gradually reduce?
-            </label>
-            <span className="text-xs font-extrabold text-[#D97706]">
-              {currentBaselineHours} hrs
-            </span>
-          </div>
+        <div className="space-y-2.5 pt-1">
+          <label
+            htmlFor="baseline-screen-slider"
+            className="text-xs font-bold text-slate-800 leading-relaxed block"
+          >
+            What is your current average screen time that you want to gradually reduce?
+          </label>
+
           <input
             id="baseline-screen-slider"
             type="range"
@@ -326,7 +408,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             onChange={(e) => updatePreferences({ averageScreenTimeHours: Number(e.target.value) })}
             className="w-full accent-[#D97706] cursor-pointer"
           />
-          <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+
+          {/* Chosen Dynamic Hour - Center Aligned Just Below Slider */}
+          <div className="flex justify-center pt-0.5">
+            <span className="text-xs sm:text-sm font-extrabold text-[#D97706] bg-amber-50 px-3.5 py-1 rounded-full border border-amber-200/80 shadow-2xs">
+              {currentBaselineHours.toFixed(1)} hrs
+            </span>
+          </div>
+
+          <div className="flex justify-between text-[10px] text-slate-400 font-medium px-0.5">
             <span>2.0 hrs (Low)</span>
             <span>6.0 hrs (Default)</span>
             <span>12.0 hrs (High)</span>
@@ -359,116 +449,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               Up to {dynamicMaxHours} hrs max
             </span>
           </div>
-        </div>
-      </section>
-
-      {/* MIDDLE SECTION: Impulse Interceptor */}
-      <section
-        aria-label="Impulse Interceptor Micro-Swap Selection"
-        className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs space-y-4"
-      >
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center flex-shrink-0">
-              <Sliders className="w-4 h-4 text-orange-600" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider whitespace-nowrap">
-                Impulse Interceptor
-              </h2>
-              <p className="text-[11px] text-slate-500 truncate">
-                Micro-Swap Toolkit
-              </p>
-            </div>
-          </div>
-
-          {/* Active Counter Badge */}
-          <span
-            className={`px-2.5 py-1 rounded-full text-xs font-bold border transition-colors whitespace-nowrap flex-shrink-0 ${
-              selectedSwapIds.length <= 2
-                ? 'bg-amber-50 text-amber-800 border-amber-200'
-                : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-            }`}
-          >
-            {selectedSwapIds.length} / 12
-          </span>
-        </div>
-
-        <p className="text-xs text-slate-500 leading-relaxed">
-          Select between 2 and 12 Shreyas Micro-Swaps. These wholesome somatic and mental actions appear
-          when intercepting compulsive dopamine triggers.
-        </p>
-
-        {/* Clean Grid of the 12 Swaps with Variable Row Heights and Perfectly Aligned Row Pairs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
-          {MASTER_MICRO_SWAPS.map((swap: MicroSwapItem) => {
-            const isChecked = selectedSwapIds.includes(swap.id);
-            const isAtMinimum = isChecked && selectedSwapIds.length <= 2;
-
-            return (
-              <label
-                key={swap.id}
-                className="relative block select-none group cursor-pointer h-full"
-              >
-                {/* Hidden default native checkbox */}
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={isChecked}
-                  onChange={() => handleToggleSwap(swap.id)}
-                />
-
-                {/* Styled Card */}
-                <div
-                  className={`border rounded-2xl p-3.5 sm:p-4 cursor-pointer transition-all flex flex-col justify-between h-full shadow-2xs hover:shadow-xs ${
-                    isChecked
-                      ? 'border-orange-500 bg-orange-50/80 ring-1 ring-orange-500/20'
-                      : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/60'
-                  }`}
-                >
-                  <div className="space-y-2">
-                    {/* Header: Title on left, Checkbox on right (No Emojis) */}
-                    <div className="flex items-start justify-between gap-2.5">
-                      <span className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
-                        {swap.title}
-                      </span>
-
-                      {/* Custom Checkbox Indicator Box at Top-Right */}
-                      <div
-                        className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
-                          isChecked
-                            ? 'bg-orange-500 text-white shadow-2xs'
-                            : 'border border-slate-300 bg-white group-hover:border-slate-400'
-                        }`}
-                      >
-                        {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                      </div>
-                    </div>
-
-                    {/* Gray Line Below the Heading */}
-                    <div className="border-b border-slate-200/80" />
-
-                    {/* Explanatory Rule & Instructions (2-3 lines) */}
-                    <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed font-normal">
-                      {swap.description}
-                    </p>
-                  </div>
-
-                  {/* Bottom Category & Minimum Warning */}
-                  <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-slate-100 text-[10px]">
-                    <span className="text-slate-400 uppercase tracking-wider font-semibold">
-                      {swap.category}
-                    </span>
-                    {isAtMinimum && (
-                      <span className="text-amber-700 font-semibold italic">
-                        Min 2 required
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </label>
-            );
-          })}
         </div>
       </section>
 

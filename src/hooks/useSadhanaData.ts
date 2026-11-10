@@ -50,7 +50,7 @@ export function getSevenDayCutoffDateString(): string {
 const GHOST_DEMO_REFLECTIONS = new Set([
   'High Rajas & Tamas surge with erratic late-night doomscrolling.',
   'High Vata spike; severe fatigue from fragmented sleep.',
-  'Slight improvement; experimented with Pause Gate after lunch.',
+  'Slight improvement; experimented with Impulse Interceptor after lunch.',
   'First sustained Sattva morning; 4 deep focus blocks logged.',
   'Sattvic momentum building; reduced digital media to 45 min.',
 ]);

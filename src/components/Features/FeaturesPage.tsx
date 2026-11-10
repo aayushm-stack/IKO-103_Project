@@ -4,6 +4,10 @@ import { InterceptorMobile } from './InterceptorMobile';
 import { CompassMobile } from './CompassMobile';
 import { CascadeVisualizer } from './CascadeVisualizer';
 import { ReframeInputs } from './ReframeInputs';
+import { useBrahmaPath } from '../../context/BrahmaPathContext';
+import { SentinelSadhana } from '../Sentinel/SentinelSadhana';
+import { SentinelPauseGate } from '../Sentinel/SentinelPauseGate';
+import { SentinelCompass } from '../Sentinel/SentinelCompass';
 
 export {
   SadhanaMobile,
@@ -11,6 +15,9 @@ export {
   CompassMobile,
   CascadeVisualizer,
   ReframeInputs,
+  SentinelSadhana,
+  SentinelPauseGate,
+  SentinelCompass,
 };
 
 export type FeatureTab = 'sadhana' | 'interceptor' | 'compass';
@@ -27,8 +34,12 @@ export interface FeaturesPageProps {
  * - Standard 44px min-height for touch targets (iOS & Android HIG compliant).
  * - Symmetrical equal width on tablets/desktops (sm:flex-1).
  * - Orange active state (#D97706).
+ * - Dynamically switches between Inner Sanctuary and Frontline Sentinel feature sets based on battlegroundPath.
  */
 export const FeaturesPage: React.FC<FeaturesPageProps> = ({ className = '' }) => {
+  const { preferences } = useBrahmaPath();
+  const isFrontline = preferences?.battlegroundPath === 'frontline';
+
   const [activeFeature, setActiveFeature] = useState<'sadhana' | 'interceptor' | 'compass'>('sadhana');
 
   const handleFeatureChange = (tab: 'sadhana' | 'interceptor' | 'compass') => {
@@ -40,7 +51,7 @@ export const FeaturesPage: React.FC<FeaturesPageProps> = ({ className = '' }) =>
     }
   };
 
-  // Scroll to top whenever switching between Sadhana Hub, Impulse Interceptor, and Bhava Compass
+  // Scroll to top whenever switching between tabs
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -59,7 +70,7 @@ export const FeaturesPage: React.FC<FeaturesPageProps> = ({ className = '' }) =>
     >
       {/* 3-Step Toggle Menu (Responsive Proportional Widths, Zero Missing Words, Industry-Standard Mobile Alignment) */}
       <div className="flex items-stretch gap-1 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs w-full max-w-lg mx-auto">
-        {/* Tab 1: Sadhana Hub */}
+        {/* Tab 1: Sadhana Hub / Sentinel Sadhana */}
         <button
           type="button"
           onClick={() => handleFeatureChange('sadhana')}
@@ -70,12 +81,12 @@ export const FeaturesPage: React.FC<FeaturesPageProps> = ({ className = '' }) =>
           }`}
         >
           <span className="leading-tight">
-            <span className="inline-block">Sadhana</span>{' '}
-            <span className="inline-block">Hub</span>
+            <span className="inline-block">{isFrontline ? 'Sentinel' : 'Sadhana'}</span>{' '}
+            <span className="inline-block">{isFrontline ? 'Sadhana' : 'Hub'}</span>
           </span>
         </button>
 
-        {/* Tab 2: Impulse Interceptor (Allocated ~38% extra space on mobile so full label fits cleanly across phones, wrapping gracefully without any cut-offs on narrow viewports) */}
+        {/* Tab 2: Impulse Interceptor */}
         <button
           type="button"
           onClick={() => handleFeatureChange('interceptor')}
@@ -91,7 +102,7 @@ export const FeaturesPage: React.FC<FeaturesPageProps> = ({ className = '' }) =>
           </span>
         </button>
 
-        {/* Tab 3: Bhāva Compass */}
+        {/* Tab 3: Bhāva Compass / Unit Compass */}
         <button
           type="button"
           onClick={() => handleFeatureChange('compass')}
@@ -102,17 +113,17 @@ export const FeaturesPage: React.FC<FeaturesPageProps> = ({ className = '' }) =>
           }`}
         >
           <span className="leading-tight">
-            <span className="inline-block">Bhāva</span>{' '}
+            <span className="inline-block">{isFrontline ? 'Unit' : 'Bhāva'}</span>{' '}
             <span className="inline-block">Compass</span>
           </span>
         </button>
       </div>
 
-      {/* Feature Content Views */}
+      {/* Feature Content Views: Automatically routes to Sentinel equivalents when in frontline path */}
       <div className="transition-all duration-200">
-        {activeFeature === 'sadhana' && <SadhanaMobile />}
-        {activeFeature === 'interceptor' && <InterceptorMobile />}
-        {activeFeature === 'compass' && <CompassMobile />}
+        {activeFeature === 'sadhana' && (isFrontline ? <SentinelSadhana /> : <SadhanaMobile />)}
+        {activeFeature === 'interceptor' && (isFrontline ? <SentinelPauseGate /> : <InterceptorMobile />)}
+        {activeFeature === 'compass' && (isFrontline ? <SentinelCompass /> : <CompassMobile />)}
       </div>
     </div>
   );

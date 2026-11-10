@@ -61,3 +61,14 @@ coverage/
 
 # Internal Team Migration Docs (Do not push to professor repository)
 TEAM_GIT_DISTRIBUTION_PLAN.pdf
+
+# LaTeX temporary build artifacts (track .tex, .bib, and .pdf in report/)
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.synctex.gz
+report/*.fls
+report/*.fdb_latexmk
+report/*.bbl
+report/*.blg

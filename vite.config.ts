@@ -7,5 +7,8 @@ export default defineConfig({
   server: {
     host: true, // Listen on all network addresses (0.0.0.0, localhost, 127.0.0.1)
     port: 5173,
+    watch: {
+      ignored: ['**/report/**', '**/docs/**', '**/*.pdf', '**/*.pptx'],
+    },
   },
 });

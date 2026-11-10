@@ -44,24 +44,21 @@ export const GunaProgressBar: React.FC<GunaProgressBarProps> = ({
         </h4>
       </div>
 
-      {/* Percentage Text Labels Above the Bar */}
+      {/* Legend Text Labels Above the Bar */}
       <div className="flex items-center justify-between text-xs font-medium mb-2.5">
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-sage inline-block" />
           <span className="text-charcoal/80">Sattva</span>
-          <span className="font-semibold text-sage">{sattvaPct}%</span>
         </div>
 
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-terracotta inline-block" />
           <span className="text-charcoal/80">Rajas</span>
-          <span className="font-semibold text-terracotta">{rajasPct}%</span>
         </div>
 
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-slate-500 inline-block" />
           <span className="text-charcoal/80">Tamas</span>
-          <span className="font-semibold text-slate-600">{tamasPct}%</span>
         </div>
       </div>
 
@@ -73,7 +70,7 @@ export const GunaProgressBar: React.FC<GunaProgressBarProps> = ({
             className="bg-sage h-full transition-all duration-500 flex items-center justify-center text-[10px] font-semibold text-white select-none"
             title={`Sattva: ${sattvaPct}%`}
           >
-            {sattvaPct >= 14 && `${sattvaPct}%`}
+            {sattvaPct >= 8 && `${sattvaPct}%`}
           </div>
         )}
 
@@ -83,7 +80,7 @@ export const GunaProgressBar: React.FC<GunaProgressBarProps> = ({
             className="bg-terracotta h-full transition-all duration-500 flex items-center justify-center text-[10px] font-semibold text-white select-none"
             title={`Rajas: ${rajasPct}%`}
           >
-            {rajasPct >= 14 && `${rajasPct}%`}
+            {rajasPct >= 8 && `${rajasPct}%`}
           </div>
         )}
 
@@ -93,7 +90,7 @@ export const GunaProgressBar: React.FC<GunaProgressBarProps> = ({
             className="bg-slate-500 h-full transition-all duration-500 flex items-center justify-center text-[10px] font-semibold text-white select-none"
             title={`Tamas: ${tamasPct}%`}
           >
-            {tamasPct >= 14 && `${tamasPct}%`}
+            {tamasPct >= 8 && `${tamasPct}%`}
           </div>
         )}
       </div>

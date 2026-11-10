@@ -65,7 +65,8 @@ export type ShastraFeatureKey =
   | 'svadhyaya'
   | 'tridosha'
   | 'doshas'
-  | 'diagnosis';
+  | 'diagnosis'
+  | 'sankalpa';
 
 /**
  * Scriptural knowledge metadata linking application features directly to authoritative Indian Knowledge Systems texts.
@@ -90,6 +91,16 @@ export interface ShastraLensData {
 }
 
 /**
+ * Deployment posting terrain for defense personnel in frontline battleground path.
+ */
+export type DeploymentEnvironment = 'high_altitude' | 'active_border' | 'cantonment';
+
+/**
+ * Daily life rhythm for civilian seekers in inner battleground path (Stage 1).
+ */
+export type LifeRhythm = 'learning_study' | 'work_enterprise' | 'home_quiet';
+
+/**
  * User profile and behavioral preferences persisted in local storage.
  */
 export interface UserPreferences {
@@ -97,13 +108,21 @@ export interface UserPreferences {
   name?: string;
   /** One-line personal Sankalpa (guiding purpose and intention) */
   sankalpa: string;
+  /** User personalized or curated foundational Sankalpa pledge text */
+  customSankalpa?: string;
+  /** Selected battleground path: civilian Seeker vs. defense Sentinel */
+  battlegroundPath?: 'inner' | 'frontline';
+  /** Soldier's current posting environment in frontline battleground path */
+  deploymentEnvironment?: DeploymentEnvironment;
+  /** Civilian seeker's current life rhythm in inner battleground path */
+  lifeRhythm?: LifeRhythm;
   /** User's baseline Guna constitution */
   baselineGuna: GunaType;
   /** User's dominant Dosha constitution */
   dominantDosha: DoshaType;
   /** List of personalized micro-swap habits (e.g., sip water, deep breathing, quick walk) */
   preferredMicroSwaps: string[];
-  /** Selected Shreyas Micro-Swap IDs for customizable Pause Gate options */
+  /** Selected Shreyas Micro-Swap IDs for customizable Impulse Interceptor options */
   selectedMicroSwapIds: string[];
   /** Whether daily Smriti notifications are enabled */
   notificationsEnabled?: boolean;

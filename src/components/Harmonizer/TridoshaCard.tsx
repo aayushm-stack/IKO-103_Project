@@ -45,7 +45,7 @@ const doshaConfigs: Record<DoshaType, DoshaConfig> = {
     defaultLifestyleTip:
       'Step away from digital screens for 10 minutes, sip warm water, establish unwavering sleep timing, and practice grounding Nadi Shodhana pranayama.',
     cognitiveStudyTip:
-      'Anchor fragmented attention by committing to a single micro-task for 25 minutes. Eliminate open browser tabs and ground your workspace before studying.',
+      'Anchor fragmented attention by committing to a single micro-task for 25 minutes. Eliminate open browser tabs and ground your space before starting.',
   },
   Pitta: {
     label: 'Pitta Balance',
@@ -83,7 +83,7 @@ const doshaConfigs: Record<DoshaType, DoshaConfig> = {
     defaultLifestyleTip:
       'Counter physical stagnation with 10 brisk Surya Namaskars, awaken before 6:00 AM, eliminate post-lunch naps, and practice energizing Bhastrika breath.',
     cognitiveStudyTip:
-      'Overcome inertia by setting an immediate 2-minute starting threshold. Movement precedes motivation—stand up, stretch, and initiate the hardest problem first.',
+      'Overcome inertia by setting an immediate 2-minute starting threshold. Movement precedes motivation—stand up, stretch, and initiate the hardest task first.',
   },
 };
 
@@ -133,7 +133,7 @@ export const TridoshaCard: React.FC<TridoshaCardProps> = ({
     ? activeDiagnosis.pranayamaSuggestion
     : config.defaultLifestyleTip;
 
-  const displayCognitiveTip = config.cognitiveStudyTip;
+
 
   return (
     <div
@@ -237,8 +237,8 @@ export const TridoshaCard: React.FC<TridoshaCardProps> = ({
           <div className="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-start gap-3 shadow-2xs">
             <span className="text-base select-none">🎯</span>
             <div className="text-xs text-slate-700 leading-relaxed">
-              <strong className="font-bold text-slate-900">Cognitive &amp; Study Habit: </strong>
-              {displayCognitiveTip}
+              <strong className="font-bold text-slate-900">Cognitive Clarity Remedy: </strong>
+              {config.cognitiveStudyTip}
             </div>
           </div>
         </div>

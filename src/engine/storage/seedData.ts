@@ -11,6 +11,9 @@ import { STORAGE_KEYS, setLocalItem } from './localStore';
 export const DEFAULT_PREFERENCES: UserPreferences = {
   name: '',
   sankalpa: 'Conserve cognitive virya and cultivate Sattvic focus',
+  battlegroundPath: 'inner',
+  deploymentEnvironment: 'active_border',
+  lifeRhythm: 'learning_study',
   baselineGuna: 'Rajas',
   dominantDosha: 'Vata',
   preferredMicroSwaps: [
@@ -53,7 +56,7 @@ function toDateString(date: Date): string {
  * - Days 1-3 (offsets 7, 6, 5): Low Yukta scores (<50) and high Vata/Tamas
  *   (doomscrolling, irregular sleep, low mindfulness, imposter syndrome).
  * - Days 4-8 (offsets 4 down to 0): Steady, progressive improvement into Sattvic balance
- *   (regular circadian sleep, Pause Gate habituation, high Yukta scores >75, Svastha calm).
+ *   (regular circadian sleep, Impulse Interceptor habituation, high Yukta scores >75, Svastha calm).
  */
 export const EIGHT_DAY_JUDGE_TEMPLATES = [
   // --- Day 1 (7 days ago): Severe Vata & Tamas Spikes, Low Yukta Score ---
@@ -125,7 +128,7 @@ export const EIGHT_DAY_JUDGE_TEMPLATES = [
       'Academic anxiety and imposter syndrome comparing myself to peers. Restless mind, fragmented study sessions (Spiked Rajas & Vata).',
   },
 
-  // --- Day 4 (4 days ago): Rebound begins, Pause Gate implemented, Moderate Yukta ---
+  // --- Day 4 (4 days ago): Rebound begins, Impulse Interceptor implemented, Moderate Yukta ---
   {
     offset: 4,
     ahara: {
@@ -287,7 +290,7 @@ export function generateDemoSadhanaLogs(): TrayopastambhaLog[] {
 }
 
 /**
- * Generates realistic Pause Gate interception records spanning the 8-day journey,
+ * Generates realistic Impulse Interceptor interception records spanning the 8-day journey,
  * with authentic student vitarka triggers and Patanjali Pratipaksha Bhavana reframes.
  */
 export function generateDemoInterceptions(): InterceptionRecord[] {

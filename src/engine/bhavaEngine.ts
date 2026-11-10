@@ -1,4 +1,4 @@
-import { BhavaEmotion, BhavaPrescription, BhavaCardData } from '../types/iks';
+import { BhavaEmotion, BhavaPrescription, BhavaCardData, BhavaLog } from '../types/iks';
 
 /**
  * Patanjali's Chitta Prasadanam framework (Yoga Sutra 1.33):
@@ -229,6 +229,126 @@ export const BHAVA_CARDS: BhavaCardData[] = [
     isResolved: false,
   },
 ];
+
+/**
+ * Helper to determine if a Bhava Compass interaction represents a positive emotional buffer.
+ */
+export function isBhavaPositive(item: any): boolean {
+  if (!item) return false;
+  if (typeof item.isPositive === 'boolean') return item.isPositive;
+  if (item.interactionType === 'positive_buffer') return true;
+  if (item.type === 'positive' || item.category === 'positive') return true;
+  if (
+    typeof item.appreciationMessage === 'string' &&
+    item.appreciationMessage.trim().length > 0
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Helper to determine if a negative Bhava Compass friction was successfully resolved.
+ */
+export function isBhavaNegativeResolved(item: any): boolean {
+  if (!item) return false;
+  if (typeof item === 'boolean') return item;
+  if (typeof item.isResolved === 'boolean') return item.isResolved;
+  if (typeof item.resolved === 'boolean') return item.resolved;
+  if (item.interactionType === 'resolved_negative_friction') return true;
+  if (item.interactionType === 'unresolved_negative_friction') return false;
+  if (typeof item.success === 'boolean') return item.success;
+  if (item.status === 'resolved' || item.status === 'success') return true;
+  if (item.status === 'unresolved') return false;
+  if (item.targetGunaShift === 'Sattva') return true;
+  return false;
+}
+
+/**
+ * Detailed statistical result of the Bhava Compass scoring calculation.
+ */
+export interface BhavaScoreStats {
+  score: number;
+  hasBhavaActivityToday: boolean;
+  unresolvedCount: number;
+  positiveCount: number;
+  resolvedCount: number;
+}
+
+/**
+ * Calculates the Bhāva Compass score and statistics based on Patanjali Yoga Sutra 1.33:
+ *
+ * Rules:
+ * - Neutral base score when nothing is logged today is 50.
+ * - Each Positive Bhāva card adds +10 pts (max +30 for 3 cards).
+ * - Each Unresolved Negative Friction subtracts -12 pts.
+ * - Each Resolved Negative Friction adds +4 pts (rewarding emotional resolution).
+ * - Clamped between 0 and 100: Math.max(0, Math.min(100, 50 + pos*10 - unres*12 + res*4)).
+ */
+export function calculateBhavaStats(
+  todayBhavaLogs: (BhavaLog | BhavaCardData | any)[] = []
+): BhavaScoreStats {
+  if (!todayBhavaLogs || todayBhavaLogs.length === 0) {
+    return {
+      score: 50,
+      hasBhavaActivityToday: false,
+      unresolvedCount: 0,
+      positiveCount: 0,
+      resolvedCount: 0,
+    };
+  }
+
+  let positiveCount = 0;
+  let unresolvedCount = 0;
+  let resolvedCount = 0;
+
+  for (const item of todayBhavaLogs) {
+    if (isBhavaPositive(item)) {
+      positiveCount += 1;
+    } else {
+      if (isBhavaNegativeResolved(item)) {
+        resolvedCount += 1;
+      } else {
+        unresolvedCount += 1;
+      }
+    }
+  }
+
+  const hasBhavaActivityToday = positiveCount > 0 || (unresolvedCount + resolvedCount) > 0;
+  if (!hasBhavaActivityToday) {
+    return {
+      score: 50,
+      hasBhavaActivityToday: false,
+      unresolvedCount: 0,
+      positiveCount: 0,
+      resolvedCount: 0,
+    };
+  }
+
+  const cappedPositiveCount = Math.min(3, positiveCount);
+  const score = Math.max(
+    0,
+    Math.min(100, 50 + cappedPositiveCount * 10 - unresolvedCount * 12 + resolvedCount * 4)
+  );
+
+  return {
+    score,
+    hasBhavaActivityToday: true,
+    unresolvedCount,
+    positiveCount,
+    resolvedCount,
+  };
+}
+
+/**
+ * Calculates the Bhava Score clamped between 0 and 100.
+ * Default neutral score is 50 when nothing is logged.
+ */
+export function calculateBhavaScore(
+  todayBhavaLogs: (BhavaLog | BhavaCardData | any)[] = []
+): number {
+  return calculateBhavaStats(todayBhavaLogs).score;
+}
 
 /**
  * Retrieves the specific Chitta Prasadanam psychological prescription for an emotional trigger.

@@ -11,6 +11,8 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useAccount } from '../../context/AccountContext';
+import { useBrahmaPath } from '../../context/BrahmaPathContext';
+import { ShastraFeatureKey } from '../../types/shastra';
 import { getLocalItem, setLocalItem, STORAGE_KEYS } from '../../engine/storage/localStore';
 import { sendGoalMutations } from '../../services/goalApi';
 import { ShortTermListContainer } from './ShortTermListContainer';
@@ -20,7 +22,7 @@ import { Goal } from './types';
 
 export interface SankalpaHubProps {
   className?: string;
-  onOpenShastraLens?: (key: 'chariot' | 'brahmacharya' | 'yukta') => void;
+  onOpenShastraLens?: (key: ShastraFeatureKey | 'chariot' | 'brahmacharya' | 'yukta' | 'sankalpa') => void;
 }
 
 /**
@@ -40,6 +42,8 @@ export const SankalpaHub: React.FC<SankalpaHubProps> = ({
 }) => {
   // Subscribe to global userName state
   const { userName } = useAccount();
+  const { openShastraLens } = useBrahmaPath();
+  const handleOpenLens = onOpenShastraLens ?? openShastraLens;
 
   // 1. Master database-backed committed goals array
   const [committedGoals, setCommittedGoals] = useState<Goal[]>(() =>
@@ -239,9 +243,9 @@ export const SankalpaHub: React.FC<SankalpaHubProps> = ({
               <span>Vedic Sankalpa</span>
             </span>
 
-            {onOpenShastraLens && (
+            {handleOpenLens && (
               <ShastraLensButton
-                onClick={() => onOpenShastraLens('brahmacharya')}
+                onClick={() => handleOpenLens('sankalpa')}
               />
             )}
           </div>

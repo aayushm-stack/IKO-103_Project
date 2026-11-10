@@ -4,7 +4,10 @@ import { useBrahmaPath } from '../../context/BrahmaPathContext';
 import { getTodayDateString } from '../../hooks/useSadhanaData';
 import { GunaType, AharaLog, NidraLog, BrahmacharyaLog } from '../../types/iks';
 import { evaluateScreenTimeZone } from '../../engine/yuktaEngine';
-import { Utensils, Moon, Zap, BookOpen, CheckCircle2, Heart, ChevronDown, Check, Sun } from 'lucide-react';
+import { Utensils, Moon, Zap, BookOpen, CheckCircle2, Heart, ChevronDown, Check, Sun, Info } from 'lucide-react';
+import { LifeRhythmBar } from '../Chariot/LifeRhythmBar';
+import { SEEKER_SADHANA_PROMPTS } from '../../data/seekerShastraData';
+import { LifeRhythm } from '../../types/shastra';
 
 export interface SadhanaMobileProps {
   className?: string;
@@ -121,7 +124,10 @@ function SadhanaDropdown<T extends string>({
 }
 
 export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) => {
-  const { todayLog, logs, logSadhanaPillar, addOrUpdateDailyLog, openShastraLens, preferences } = useBrahmaPath();
+  const { todayLog, logs, logSadhanaPillar, addOrUpdateDailyLog, openShastraLens, preferences, setActiveView } = useBrahmaPath();
+
+  const rhythm: LifeRhythm = preferences?.lifeRhythm ?? 'learning_study';
+  const rhythmPrompts = SEEKER_SADHANA_PROMPTS[rhythm] ?? SEEKER_SADHANA_PROMPTS.learning_study;
 
   const baselineHours = preferences?.averageScreenTimeHours ?? 6;
   const baselineMinutes = Math.round(baselineHours * 60);
@@ -364,14 +370,18 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: '#FFFFFF',
-        borderColor: '#E2E8F0',
-      }}
-      className={`p-6 rounded-3xl border shadow-xs space-y-6 ${className}`}
-    >
-      {/* Header with Title and Shastra Lens Trigger */}
+    <div className={`space-y-6 ${className}`}>
+      {/* Top Life Rhythm Switcher */}
+      <LifeRhythmBar />
+
+      <div
+        style={{
+          backgroundColor: '#FFFFFF',
+          borderColor: '#E2E8F0',
+        }}
+        className="p-6 rounded-3xl border shadow-xs space-y-6"
+      >
+        {/* Header with Title and Shastra Lens Trigger */}
       <div className="flex items-center justify-between border-b border-slate-200/90 pb-4">
         <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -406,7 +416,7 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
             Daily Disciplines
           </span>
           <span className="font-extrabold text-emerald-700 font-mono text-xs sm:text-sm">
-            {activePillarsCount} / 3 Logged
+            {activePillarsCount} of 3 Logged
           </span>
         </div>
       </div>
@@ -447,6 +457,9 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
               <label className="block text-xs font-medium text-slate-700">
                 Nutritional Quality (Food intake)
               </label>
+              <p className="text-[11px] text-slate-500 font-normal">
+                {rhythmPrompts.aharaNutritionHint}
+              </p>
               <SadhanaDropdown
                 value={nutritionQuality}
                 onChange={(val) => setNutritionQuality(val)}
@@ -468,6 +481,9 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
                   {(digitalMinutes / 60).toFixed(1).replace(/\.0$/, '')} hrs
                 </span>
               </div>
+              <p className="text-[11px] text-slate-500 font-normal">
+                {rhythmPrompts.aharaScreenHint}
+              </p>
               <input
                 type="range"
                 min="0"
@@ -517,6 +533,21 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
                   </div>
                 );
               })()}
+
+              {/* Baseline Explanation Helper Box */}
+              <div className="mt-3 p-3 bg-slate-50/80 rounded-xl border border-slate-200/80 flex items-start gap-2.5">
+                <Info className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  Your Baseline ({baselineHours}h) is your realistic daily average, not a rigid app-blocker limit. We track relative momentum to prevent guilt-driven relapses.
+                  <button
+                    type="button"
+                    onClick={() => setActiveView('settings')}
+                    className="font-semibold text-emerald-700 hover:text-emerald-800 underline decoration-emerald-200 underline-offset-2 ml-1 cursor-pointer"
+                  >
+                    Update baseline in Settings &rarr;
+                  </button>
+                </p>
+              </div>
             </div>
 
             {/* Sensory Mindfulness Slider */}
@@ -526,9 +557,12 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
                   Sensory Mindfulness &amp; Intentionality
                 </label>
                 <span className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200">
-                  {mindfulnessScore} / 5
+                  {mindfulnessScore} of 5
                 </span>
               </div>
+              <p className="text-[11px] text-slate-500 font-normal">
+                {rhythmPrompts.aharaMindfulHint}
+              </p>
               <input
                 type="range"
                 min="1"
@@ -629,6 +663,9 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
                   {hoursSlept} hrs
                 </span>
               </div>
+              <p className="text-[11px] text-slate-500 font-normal">
+                {rhythmPrompts.nidraSleepHint}
+              </p>
               <input
                 type="range"
                 min="3"
@@ -672,6 +709,9 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
               <label className="block text-xs font-medium text-slate-700">
                 Subjective Rest Quality
               </label>
+              <p className="text-[11px] text-slate-500 font-normal">
+                {rhythmPrompts.nidraSleepHint}
+              </p>
               <SadhanaDropdown
                 value={restQuality}
                 onChange={(val) => setRestQuality(val)}
@@ -759,9 +799,12 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
                   Inner Vitality Rating
                 </label>
                 <span className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200">
-                  {energyRating} / 5
+                  {energyRating} of 5
                 </span>
               </div>
+              <p className="text-[11px] text-slate-500 font-normal">
+                {rhythmPrompts.brahmaEnergyHint}
+              </p>
               <input
                 type="range"
                 min="1"
@@ -773,7 +816,7 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
               />
               <div className="grid grid-cols-3 items-center text-[11px] pt-1 px-0.5">
                 <span className="text-left text-slate-400 font-medium">
-                  1 (Drained / Leaking)
+                  1 (Drained or Depleted)
                 </span>
                 <div className="text-center">
                   <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 shadow-2xs inline-block">
@@ -786,37 +829,37 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
               </div>
             </div>
 
-            {/* Focused Study & Deep Work Hours Slider */}
+            {/* Focused Sessions Slider (0 to 10) */}
             <div className="flex flex-col space-y-2 pt-3 border-t border-slate-200/70">
               <div className="flex justify-between items-center">
                 <label className="text-xs font-medium text-slate-700">
-                  Focused Study &amp; Deep Work
+                  {rhythmPrompts.focusBlocksTitle}
                 </label>
                 <span className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200">
-                  {studyBlocks} {studyBlocks === 1 ? 'hr' : 'hrs'}
+                  {studyBlocks} {studyBlocks === 1 ? 'session' : 'sessions'}
                 </span>
               </div>
+              <p className="text-[11px] text-slate-500 font-normal">
+                {rhythmPrompts.focusBlocksHint}
+              </p>
               <input
                 type="range"
                 min="0"
-                max="12"
-                step="0.5"
+                max="10"
+                step="1"
                 value={studyBlocks}
                 onChange={(e) => setStudyBlocks(Number(e.target.value))}
                 className="w-full accent-[#D97706] cursor-pointer"
               />
               <div className="grid grid-cols-3 items-center text-[11px] pt-1 px-0.5">
-                <span className="text-left text-slate-400 font-medium">0h (Rest / Recovery)</span>
+                <span className="text-left text-slate-400 font-medium">0 (Rest or Recovery)</span>
                 <div className="text-center">
                   <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 shadow-2xs inline-block">
-                    4h–6h (Yukta Optimal)
+                    4–6 (Optimal Target)
                   </span>
                 </div>
-                <span className="text-right text-slate-400 font-medium">12h (Max Limit)</span>
+                <span className="text-right text-slate-400 font-medium">10 (Full Day)</span>
               </div>
-              <p className="text-[11px] text-slate-400 leading-tight">
-                Tracks total hours of deep work and professional focus, accommodating natural work-pause rhythms (e.g. 25m work + 5m rest or 50m work + 10m rest).
-              </p>
             </div>
 
             {/* Dominant Observed Guna Select */}
@@ -985,6 +1028,7 @@ export const SadhanaMobile: React.FC<SadhanaMobileProps> = ({ className = '' }) 
         </div>
       </div>
     </div>
+  </div>
   );
 };
 
